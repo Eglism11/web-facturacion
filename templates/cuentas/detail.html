@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cuenta.numero_factura }} - Facturación{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <a href="{{ url_for('listar_cuentas') }}" class="text-sm text-gray-500 hover:text-gray-700">
+                ← Volver a cuentas
+            </a>
+            <h2 class="mt-2 text-2xl font-bold text-gray-900">{{ cuenta.numero_factura }}</h2>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('descargar_pdf', id=cuenta.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fas fa-download mr-2"></i>Descargar PDF
+            </a>
+            {% if cuenta.estado == 'pendiente' %}
+            <form method="POST" action="{{ url_for('marcar_pagada', id=cuenta.id) }}">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                    <i class="fas fa-check mr-2"></i>Marcar como Pagada
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Invoice Card -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <!-- Status Banner -->
+        <div class="px-4 py-3 sm:px-6 {% if cuenta.estado == 'pagado' %}bg-green-50 border-b border-green-200{% else %}bg-amber-50 border-b border-amber-200{% endif %}">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    {% if cuenta.estado == 'pagado' %}
+                    <i class="fas fa-check-circle text-green-500 text-xl mr-2"></i>
+                    <span class="text-green-800 font-medium">Estado: Pagada</span>
+                    {% else %}
+                    <i class="fas fa-clock text-amber-500 text-xl mr-2"></i>
+                    <span class="text-amber-800 font-medium">Estado: Pendiente de Pago</span>
+                    {% endif %}
+                </div>
+                <span class="text-sm text-gray-500">Generada el {{ cuenta.created_at.strftime('%d/%m/%Y') }}</span>
+            </div>
+        </div>
+
+        <div class="p-6 sm:p-8">
+            <!-- Client Info -->
+            <div class="border-b border-gray-200 pb-6 mb-6">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Cliente</h3>
+                <div class="flex items-center">
+                    <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span class="text-indigo-600 font-bold text-lg">{{ cuenta.cliente.nombre[0] }}</span>
+                    </div>
+                    <div class="ml-4">
+                        <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="text-lg font-medium text-gray-900 hover:text-indigo-600">
+                            {{ cuenta.cliente.nombre }}
+                        </a>
+                        {% if cuenta.cliente.email %}
+                        <p class="text-sm text-gray-500">{{ cuenta.cliente.email }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Details -->
+            <div class="border-b border-gray-200 pb-6 mb-6">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Detalles</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-sm text-gray-500">Número de Factura</span>
+                        <p class="text-sm font-medium text-gray-900">{{ cuenta.numero_factura }}</p>
+                    </div>
+                    <div>
+                        <span class="text-sm text-gray-500">Fecha</span>
+                        <p class="text-sm font-medium text-gray-900">{{ cuenta.created_at.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concept -->
+            <div class="border-b border-gray-200 pb-6 mb-6">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Concepto</h3>
+                <p class="text-gray-900">{{ cuenta.concepto }}</p>
+            </div>
+
+            <!-- Amount -->
+            <div class="bg-gray-50 -mx-6 -mb-6 px-6 py-6 sm:-mx-8 sm:-mb-8 sm:px-8">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-medium text-gray-900">Total</span>
+                    <span class="text-3xl font-bold text-gray-900">${{ "{:,.2f}".format(cuenta.monto|float) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-between">
+        <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" onsubmit="return confirm('¿Eliminar esta cuenta de cobro? Esta acción no se puede deshacer.')">
+            <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                <i class="fas fa-trash mr-1"></i>Eliminar Cuenta
+            </button>
+        </form>
+
+        <a href="{{ url_for('listar_cuentas') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+            Ver todas las cuentas →
+        </a>
+    </div>
+
+</div>
+{% endblock %}

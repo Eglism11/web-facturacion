@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Cuenta de Cobro - Facturación{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <a href="{{ url_for('listar_cuentas') }}" class="text-sm text-gray-500 hover:text-gray-700">
+            ← Volver a cuentas
+        </a>
+        <h2 class="mt-2 text-2xl font-bold text-gray-900">Nueva Cuenta de Cobro</h2>
+        <p class="mt-1 text-sm text-gray-500">Genera una cuenta de cobro para un cliente</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white shadow rounded-lg">
+        <form method="POST" class="p-6 space-y-6">
+
+            <!-- Cliente (required) -->
+            <div>
+                <label for="cliente_id" class="block text-sm font-medium text-gray-700">
+                    Cliente *
+                </label>
+                <select name="cliente_id" id="cliente_id" required
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Selecciona un cliente</option>
+                    {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                    {% endfor %}
+                </select>
+                {% if not clientes %}
+                <p class="mt-2 text-sm text-red-600">
+                    No hay clientes. <a href="{{ url_for('crear_cliente') }}" class="underline">Agrega uno primero</a>.
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Concepto -->
+            <div>
+                <label for="concepto" class="block text-sm font-medium text-gray-700">
+                    Concepto *
+                </label>
+                <textarea name="concepto" id="concepto" rows="3" required
+                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Descripción del servicio o producto..."></textarea>
+            </div>
+
+            <!-- Monto -->
+            <div>
+                <label for="monto" class="block text-sm font-medium text-gray-700">
+                    Monto ($) *
+                </label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input type="number" name="monto" id="monto" step="0.01" min="0" required
+                           class="block w-full pl-7 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="0.00">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <a href="{{ url_for('listar_cuentas') }}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
+                    <i class="fas fa-file-invoice mr-2"></i>Generar Cuenta de Cobro
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Facturación{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Dashboard
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">Resumen de tu sistema de facturación</p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
+            <a href="{{ url_for('crear_cliente') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+            </a>
+            <a href="{{ url_for('crear_cuenta') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                <i class="fas fa-file-invoice mr-2"></i>Nueva Cuenta
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Total Clientes -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-md bg-indigo-500 p-3">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Clientes</dt>
+                            <dd class="text-2xl font-semibold text-gray-900">{{ total_clientes }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    <a href="{{ url_for('listar_clientes') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Ver todos</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Facturado -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-md bg-emerald-500 p-3">
+                            <i class="fas fa-dollar-sign text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Facturado</dt>
+                            <dd class="text-2xl font-semibold text-gray-900">${{ "{:,.2f}".format(total_facturado) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm text-gray-500">{{ total_cuentas }} cuentas generadas</div>
+            </div>
+        </div>
+
+        <!-- Pendiente -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-md bg-amber-500 p-3">
+                            <i class="fas fa-clock text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Pendiente de Pago</dt>
+                            <dd class="text-2xl font-semibold text-amber-600">${{ "{:,.2f}".format(total_pendiente) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    <a href="{{ url_for('listar_cuentas', estado='pendiente') }}" class="font-medium text-amber-600 hover:text-amber-500">Ver pendientes</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagado -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="rounded-md bg-green-500 p-3">
+                            <i class="fas fa-check-circle text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Pagado</dt>
+                            <dd class="text-2xl font-semibold text-green-600">${{ "{:,.2f}".format(total_pagado) }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-5 py-3">
+                <div class="text-sm">
+                    <a href="{{ url_for('listar_cuentas', estado='pagado') }}" class="font-medium text-green-600 hover:text-green-500">Ver pagadas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Accounts -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Cuentas Recientes</h3>
+        </div>
+
+        {% if cuentas_recientes %}
+            <div class="divide-y divide-gray-200">
+                {% for cuenta in cuentas_recientes %}
+                    <div class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    {% if cuenta.estado == 'pagado' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Pagado
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                            Pendiente
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {{ cuenta.numero_factura }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ cuenta.cliente.nombre }} - {{ cuenta.concepto[:50] }}{% if cuenta.concepto|length > 50 %}...{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-lg font-semibold text-gray-900">
+                                    ${{ "{:,.2f}".format(cuenta.monto|float) }}
+                                </span>
+                                <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                    Ver →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
+                <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    Ver todas las cuentas →
+                </a>
+            </div>
+        {% else %}
+            <div class="px-4 py-8 text-center">
+                <i class="fas fa-file-invoice text-gray-300 text-4xl mb-3"></i>
+                <p class="text-gray-500 mb-4">No hay cuentas de cobro registradas</p>
+                <a href="{{ url_for('crear_cuenta') }}" class="text-indigo-600 font-medium hover:text-indigo-500">
+                    Crear primera cuenta →
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
