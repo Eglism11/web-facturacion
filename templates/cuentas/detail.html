@@ -41,7 +41,7 @@
                     <span class="text-amber-800 font-medium">Estado: Pendiente de Pago</span>
                     {% endif %}
                 </div>
-                <span class="text-sm text-gray-500">Generada el {{ cuenta.created_at.strftime('%d/%m/%Y') }}</span>
+                <span class="text-sm text-gray-500">Documento del {{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</span>
             </div>
         </div>
 
@@ -74,7 +74,11 @@
                     </div>
                     <div>
                         <span class="text-sm text-gray-500">Fecha</span>
-                        <p class="text-sm font-medium text-gray-900">{{ cuenta.created_at.strftime('%d/%m/%Y') }}</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div>
+                        <span class="text-sm text-gray-500">Firma seleccionada</span>
+                        <p class="text-sm font-medium text-gray-900">{{ cuenta.firma.nombre if cuenta.firma else 'Sin firma' }}</p>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 
 db = SQLAlchemy()
 
@@ -42,6 +42,8 @@ class Cuenta(db.Model):
     numero_factura = db.Column(db.String(50), unique=True)
     estado = db.Column(db.String(20), default='pendiente')
     pdf_url = db.Column(db.Text)
+    fecha_documento = db.Column(db.Date, default=date.today, nullable=False)
+    firma_id = db.Column(db.Integer, db.ForeignKey('firmas.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -56,5 +58,21 @@ class Cuenta(db.Model):
             'monto': float(self.monto) if self.monto else 0,
             'numero_factura': self.numero_factura,
             'estado': self.estado,
+            'fecha_documento': self.fecha_documento.isoformat() if self.fecha_documento else None,
+            'firma_nombre': self.firma.nombre if self.firma else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+
+class Firma(db.Model):
+    __tablename__ = 'firmas'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    archivo = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    cuentas = db.relationship('Cuenta', backref='firma', lazy=True)
+
+    def __repr__(self):
+        return f'<Firma {self.nombre}>'

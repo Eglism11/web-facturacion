@@ -61,6 +61,32 @@
                 </div>
             </div>
 
+            <!-- Fecha del documento -->
+            <div>
+                <label for="fecha_documento" class="block text-sm font-medium text-gray-700">
+                    Fecha del documento *
+                </label>
+                <input type="date" name="fecha_documento" id="fecha_documento" required value="{{ today }}"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Firma -->
+            <div>
+                <label for="firma_id" class="block text-sm font-medium text-gray-700">
+                    Firma para el PDF
+                </label>
+                <select name="firma_id" id="firma_id"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Sin firma</option>
+                    {% for firma in firmas %}
+                    <option value="{{ firma.id }}">{{ firma.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <p class="mt-2 text-xs text-gray-500">
+                    Puedes administrar tus firmas en la sección "Mis Firmas".
+                </p>
+            </div>
+
             <!-- Actions -->
             <div class="flex justify-end space-x-3 pt-4 border-t">
                 <a href="{{ url_for('listar_cuentas') }}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">

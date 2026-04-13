@@ -62,7 +62,7 @@
                                 <div class="text-sm text-gray-900">{{ cuenta.concepto[:50] }}{% if cuenta.concepto|length > 50 %}...{% endif %}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-500">{{ cuenta.created_at.strftime('%d/%m/%Y') }}</div>
+                                <div class="text-sm text-gray-500">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 {% if cuenta.estado == 'pagado' %}

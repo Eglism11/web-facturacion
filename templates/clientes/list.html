@@ -62,9 +62,6 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">{{ cliente.nombre }}</div>
-                                        {% if cliente.direccion %}
-                                            <div class="text-sm text-gray-500">{{ cliente.direccion[:50] }}{% if cliente.direccion|length > 50 %}...{% endif %}</div>
-                                        {% endif %}
                                     </div>
                                 </div>
                             </td>
