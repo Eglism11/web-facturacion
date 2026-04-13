@@ -349,7 +349,7 @@ def descargar_pdf(id):
     pdf.set_margins(15, 12, 15)
 
     pdf.set_font('Arial', '', 11)
-    pdf.cell(0, 8, f"Fecha: {cuenta.fecha_documento.strftime('%d/%m/%Y')}", ln=True, align='R')
+    pdf.cell(0, 8, f"Fecha: {cuenta.fecha_documento.strftime('%d/%m/%Y')}", ln=True, align='L')
     pdf.set_font('Arial', 'B', 14)
     pdf.cell(0, 10, 'DOCUMENTO EQUIVALENTE A LA FACTURA', ln=True, align='C')
     pdf.set_font('Arial', '', 11)
@@ -393,8 +393,8 @@ def descargar_pdf(id):
     pdf.cell(45, concept_end_y - concept_y, format_cop(cuenta.monto), border=1, align='R')
     pdf.ln(6)
 
-    banco = os.environ.get('PAGO_BANCO', 'Banco por definir')
-    cuenta_pago = os.environ.get('PAGO_CUENTA', 'Cuenta por definir')
+    banco = os.environ.get('PAGO_BANCO', 'RappiPay')
+    cuenta_pago = os.environ.get('PAGO_CUENTA', 'Cuenta RappiPay')
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'Informacion de pago', ln=True)
     pdf.set_font('Arial', '', 11)
