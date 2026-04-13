@@ -335,7 +335,7 @@ def eliminar_firma(id):
 
 @app.route('/cuentas/<int:id>/pdf')
 def descargar_pdf(id):
-    """Generate and download PDF"""
+    """Generate and download equivalent invoice PDF"""
     from fpdf import FPDF
 
     cuenta = Cuenta.query.get_or_404(id)

@@ -17,7 +17,7 @@
     <div class="bg-white shadow rounded-lg">
         <form method="POST" class="p-6 space-y-6">
 
-            <!-- Cliente (required) -->
+            <!-- 1. Cliente -->
             <div>
                 <label for="cliente_id" class="block text-sm font-medium text-gray-700">
                     Cliente *
@@ -36,7 +36,16 @@
                 {% endif %}
             </div>
 
-            <!-- Concepto -->
+            <!-- 2. Fecha -->
+            <div>
+                <label for="fecha_documento" class="block text-sm font-medium text-gray-700">
+                    Fecha *
+                </label>
+                <input type="date" name="fecha_documento" id="fecha_documento" required value="{{ today }}"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- 3. Concepto -->
             <div>
                 <label for="concepto" class="block text-sm font-medium text-gray-700">
                     Concepto *
@@ -46,7 +55,7 @@
                           placeholder="Descripción del servicio o producto..."></textarea>
             </div>
 
-            <!-- Monto -->
+            <!-- 4. Monto -->
             <div>
                 <label for="monto" class="block text-sm font-medium text-gray-700">
                     Monto ($) *
@@ -61,19 +70,10 @@
                 </div>
             </div>
 
-            <!-- Fecha del documento -->
-            <div>
-                <label for="fecha_documento" class="block text-sm font-medium text-gray-700">
-                    Fecha del documento *
-                </label>
-                <input type="date" name="fecha_documento" id="fecha_documento" required value="{{ today }}"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            </div>
-
-            <!-- Firma -->
+            <!-- 5. Firma -->
             <div>
                 <label for="firma_id" class="block text-sm font-medium text-gray-700">
-                    Firma para el PDF
+                    Firma (opcional)
                 </label>
                 <select name="firma_id" id="firma_id"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
