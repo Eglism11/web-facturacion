@@ -22,8 +22,46 @@ def allowed_signature_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_SIGNATURE_EXTENSIONS
 
 
+def parse_monto_colombia(raw):
+    """Acepta '5000000', '5.000.000', '5.000.000,50' y devuelve Decimal."""
+    s = (raw or '').strip().replace(' ', '')
+    if not s:
+        raise ValueError('Monto vacío')
+    s = s.replace('.', '')
+    if ',' in s:
+        s = s.replace(',', '.', 1)
+    return Decimal(s)
+
+
+def format_cop_colombia(value):
+    """Formato colombiano: $5.000.000,00"""
+    d = Decimal(str(value)).quantize(Decimal('0.01'))
+    neg = d < 0
+    d = abs(d)
+    int_part = int(d)
+    resto = d - int_part
+    cents = int((resto * 100).to_integral_value())
+    int_str = str(int_part)
+    chunks = []
+    while int_str:
+        chunks.append(int_str[-3:])
+        int_str = int_str[:-3]
+    miles = '.'.join(reversed(chunks)) if chunks else '0'
+    sign = '-' if neg else ''
+    return f"{sign}${miles},{cents:02d}"
+
+
 def format_cop(value):
-    return f"${float(value):,.2f}"
+    return format_cop_colombia(value)
+
+
+def _jinja_format_cop_co(v):
+    if v is None:
+        return ''
+    return format_cop_colombia(v)
+
+
+app.jinja_env.filters['format_cop_co'] = _jinja_format_cop_co
 
 
 def numero_a_letras(number):
@@ -102,6 +140,9 @@ def ensure_schema_updates():
 
         if 'firma_id' not in cuenta_columns:
             statements.append("ALTER TABLE cuentas ADD COLUMN firma_id INTEGER REFERENCES firmas(id)")
+
+        if 'numero_cuenta_pago' not in cuenta_columns:
+            statements.append("ALTER TABLE cuentas ADD COLUMN numero_cuenta_pago VARCHAR(120)")
 
     if statements:
         with db.engine.begin() as connection:
@@ -229,9 +270,27 @@ def crear_cuenta():
     if request.method == 'POST':
         cliente_id = request.form['cliente_id']
         concepto = request.form['concepto']
-        monto = Decimal(request.form['monto'])
+        try:
+            monto = parse_monto_colombia(request.form.get('monto', ''))
+        except (ValueError, ArithmeticError):
+            flash('El monto no es válido. Usa solo números y separadores (ej: 5.000.000 o 5.000.000,50).', 'error')
+            return render_template(
+                'cuentas/create.html',
+                clientes=clientes,
+                firmas=firmas,
+                today=date.today().isoformat(),
+            )
         fecha_documento = datetime.strptime(request.form['fecha_documento'], '%Y-%m-%d').date()
         firma_id = request.form.get('firma_id') or None
+        numero_cuenta_pago = request.form.get('numero_cuenta_pago', '').strip()
+        if not numero_cuenta_pago:
+            flash('Indica el número de cuenta para pago (Nequi, RappiPay, cuenta bancaria, etc.).', 'error')
+            return render_template(
+                'cuentas/create.html',
+                clientes=clientes,
+                firmas=firmas,
+                today=date.today().isoformat(),
+            )
 
         # Generate invoice number
         year = fecha_documento.year
@@ -247,6 +306,7 @@ def crear_cuenta():
             numero_factura=numero_factura,
             fecha_documento=fecha_documento,
             firma_id=firma_id,
+            numero_cuenta_pago=numero_cuenta_pago,
             estado='pendiente'
         )
         db.session.add(cuenta)
@@ -363,12 +423,13 @@ def descargar_pdf(id):
     pdf.cell(0, 7, f"NIT/CC: {cliente.identificacion or 'No registrado'}", ln=True)
     pdf.ln(3)
 
-    prestador_nombre = os.environ.get('PRESTADOR_NOMBRE', 'Jesus Briceno')
-    prestador_doc = os.environ.get('PRESTADOR_DOCUMENTO', 'CC 0')
+    prestador_nombre = (os.environ.get('PRESTADOR_NOMBRE') or '').strip()
+    prestador_doc = (os.environ.get('PRESTADOR_DOCUMENTO') or '').strip()
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'DEBE A:', ln=True)
     pdf.set_font('Arial', '', 11)
-    pdf.cell(0, 7, f"{prestador_nombre} - {prestador_doc}", ln=True)
+    pdf.cell(0, 7, f"Nombre completo: {prestador_nombre or '(Configure PRESTADOR_NOMBRE)'}", ln=True)
+    pdf.cell(0, 7, f"Cedula/CE: {prestador_doc or '(Configure PRESTADOR_DOCUMENTO)'}", ln=True)
     pdf.ln(3)
 
     pdf.set_font('Arial', 'B', 11)
@@ -393,13 +454,15 @@ def descargar_pdf(id):
     pdf.cell(45, concept_end_y - concept_y, format_cop(cuenta.monto), border=1, align='R')
     pdf.ln(6)
 
-    banco = os.environ.get('PAGO_BANCO', 'RappiPay')
-    cuenta_pago = os.environ.get('PAGO_CUENTA', 'Cuenta RappiPay')
+    numero_pago = (getattr(cuenta, 'numero_cuenta_pago', None) or '').strip()
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'Informacion de pago', ln=True)
     pdf.set_font('Arial', '', 11)
-    pdf.cell(0, 7, f"Banco: {banco}", ln=True)
-    pdf.cell(0, 7, f"Cuenta: {cuenta_pago}", ln=True)
+    linea_pago = (
+        f"El pago debera efectuarse a: RappiPay No. {numero_pago or '—'} "
+        f"a nombre de {prestador_nombre or 'el prestador'}"
+    )
+    pdf.multi_cell(0, 7, linea_pago)
     pdf.ln(3)
 
     pdf.set_font('Arial', 'B', 11)
@@ -410,18 +473,27 @@ def descargar_pdf(id):
         'No responsable de IVA segun art. 437 del ET. Documento equivalente para soporte contable.'
     )
     pdf.multi_cell(0, 6, texto_tributario)
-    pdf.ln(12)
+    pdf.ln(18)
 
-    signature_line_y = pdf.get_y()
+    sig_w_mm = 40
+    x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     if firma:
         signature_path = os.path.join(SIGNATURE_UPLOAD_FOLDER, firma.archivo)
         if os.path.exists(signature_path):
-            pdf.image(signature_path, x=75, y=signature_line_y - 20, w=60)
-    pdf.set_y(signature_line_y)
-    pdf.line(65, signature_line_y + 10, 145, signature_line_y + 10)
-    pdf.set_xy(65, signature_line_y + 12)
+            pdf.image(signature_path, x=x_img, w=sig_w_mm)
+            pdf.ln(4)
+        else:
+            pdf.ln(10)
+    else:
+        pdf.ln(10)
+
+    line_y = pdf.get_y()
+    line_w = 80
+    x_line = pdf.l_margin + (pdf.epw - line_w) / 2
+    pdf.line(x_line, line_y, x_line + line_w, line_y)
+    pdf.ln(2)
     pdf.set_font('Arial', '', 10)
-    pdf.cell(80, 6, prestador_nombre, align='C')
+    pdf.cell(0, 6, prestador_nombre or '', align='C', ln=True)
 
     # Output
     output = io.BytesIO(pdf.output(dest='S'))

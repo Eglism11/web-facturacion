@@ -90,7 +90,7 @@
                                         <p class="text-xs text-gray-400 mt-1">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</p>
                                     </div>
                                     <div class="text-right">
-                                        <span class="text-lg font-semibold text-gray-900">${{ "{:,.2f}".format(cuenta.monto|float) }}</span>
+                                        <span class="text-lg font-semibold text-gray-900">{{ cuenta.monto|format_cop_co }}</span>
                                         <div class="mt-2">
                                             <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-sm text-indigo-600 hover:text-indigo-900">Ver →</a>
                                         </div>

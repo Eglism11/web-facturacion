@@ -57,17 +57,29 @@
 
             <!-- 4. Monto -->
             <div>
-                <label for="monto" class="block text-sm font-medium text-gray-700">
+                <label for="monto_display" class="block text-sm font-medium text-gray-700">
                     Monto ($) *
                 </label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span class="text-gray-500 sm:text-sm">$</span>
                     </div>
-                    <input type="number" name="monto" id="monto" step="0.01" min="0" required
+                    <input type="text" id="monto_display" required inputmode="decimal" autocomplete="off"
                            class="block w-full pl-7 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                           placeholder="0.00">
+                           placeholder="5.000.000">
+                    <input type="hidden" name="monto" id="monto" value="">
                 </div>
+                <p class="mt-1 text-xs text-gray-500">Usa punto para miles (ej: 5.000.000) y coma para decimales si aplica.</p>
+            </div>
+
+            <!-- Número de cuenta para pago -->
+            <div>
+                <label for="numero_cuenta_pago" class="block text-sm font-medium text-gray-700">
+                    Número de cuenta para pago *
+                </label>
+                <input type="text" name="numero_cuenta_pago" id="numero_cuenta_pago" required
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="Nequi, RappiPay, cuenta bancaria, etc.">
             </div>
 
             <!-- 5. Firma -->
@@ -100,4 +112,42 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const form = document.querySelector('form[method="POST"]');
+    const display = document.getElementById('monto_display');
+    const hidden = document.getElementById('monto');
+    if (!form || !display || !hidden) return;
+
+    function formatMontoCO() {
+        let raw = display.value.replace(/\./g, '').replace(/[^\d,]/g, '');
+        const comma = raw.indexOf(',');
+        let ent, dec;
+        if (comma >= 0) {
+            ent = raw.slice(0, comma).replace(/\D/g, '');
+            dec = raw.slice(comma + 1).replace(/\D/g, '').slice(0, 2);
+        } else {
+            ent = raw.replace(/\D/g, '');
+            dec = '';
+        }
+        ent = ent.replace(/^0+(\d)/, '$1');
+        if (!ent && !dec) {
+            display.value = '';
+            return;
+        }
+        const entFmt = ent ? ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+        display.value = dec !== '' ? (entFmt + ',' + dec) : entFmt;
+    }
+
+    display.addEventListener('input', formatMontoCO);
+
+    form.addEventListener('submit', function () {
+        const v = display.value.replace(/\./g, '').replace(',', '.');
+        hidden.value = v;
+    });
+})();
+</script>
 {% endblock %}

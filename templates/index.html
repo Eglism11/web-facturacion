@@ -60,7 +60,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total Facturado</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">${{ "{:,.2f}".format(total_facturado) }}</dd>
+                            <dd class="text-2xl font-semibold text-gray-900">{{ total_facturado|format_cop_co }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Pendiente de Pago</dt>
-                            <dd class="text-2xl font-semibold text-amber-600">${{ "{:,.2f}".format(total_pendiente) }}</dd>
+                            <dd class="text-2xl font-semibold text-amber-600">{{ total_pendiente|format_cop_co }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -106,7 +106,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Pagado</dt>
-                            <dd class="text-2xl font-semibold text-green-600">${{ "{:,.2f}".format(total_pagado) }}</dd>
+                            <dd class="text-2xl font-semibold text-green-600">{{ total_pagado|format_cop_co }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -153,7 +153,7 @@
                             </div>
                             <div class="flex items-center space-x-4">
                                 <span class="text-lg font-semibold text-gray-900">
-                                    ${{ "{:,.2f}".format(cuenta.monto|float) }}
+                                    {{ cuenta.monto|format_cop_co }}
                                 </span>
                                 <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
                                     Ver →

@@ -72,7 +72,7 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-sm font-semibold text-gray-900">${{ "{:,.2f}".format(cuenta.monto|float) }}</span>
+                                <span class="text-sm font-semibold text-gray-900">{{ cuenta.monto|format_cop_co }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Ver</a>

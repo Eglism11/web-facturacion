@@ -44,6 +44,7 @@ class Cuenta(db.Model):
     pdf_url = db.Column(db.Text)
     fecha_documento = db.Column(db.Date, default=date.today, nullable=False)
     firma_id = db.Column(db.Integer, db.ForeignKey('firmas.id'))
+    numero_cuenta_pago = db.Column(db.String(120))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -60,6 +61,7 @@ class Cuenta(db.Model):
             'estado': self.estado,
             'fecha_documento': self.fecha_documento.isoformat() if self.fecha_documento else None,
             'firma_nombre': self.firma.nombre if self.firma else None,
+            'numero_cuenta_pago': self.numero_cuenta_pago,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
