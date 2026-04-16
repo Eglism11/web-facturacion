@@ -425,50 +425,67 @@ def guardar_firma_base64():
 @app.route('/perfil/firma/upload', methods=['POST'])
 @login_required
 def subir_firma_procesada():
+    import io
+    import base64
+    from PIL import Image
+    
     if 'imagen' not in request.files:
-        return {'success': False, 'error': 'No se recibió archivo'}
+        return jsonify({'success': False, 'error': 'No se recibió archivo'})
     
     file = request.files['imagen']
     if not file.filename:
-        return {'success': False, 'error': 'No hay archivo'}
+        return jsonify({'success': False, 'error': 'No hay archivo'})
     
     ext = file.filename.rsplit('.', 1)[1].lower()
     if ext not in ALLOWED_SIGNATURE_EXTENSIONS:
-        return {'success': False, 'error': 'Formato no permitido'}
+        return jsonify({'success': False, 'error': 'Formato no permitido'})
     
-    from PIL import Image
-    import io
-    
-    img = Image.open(file)
-    if img.mode != 'RGBA':
-        img = img.convert('RGBA')
-    
-    pixels = img.load()
-    width, height = img.size
-    
-    for y in range(height):
-        for x in range(width):
-            r, g, b, a = pixels[x, y]
-            brightness = (r + g + b) / 3
-            if brightness > 230:
-                pixels[x, y] = (r, g, b, 0)
-            elif brightness > 200 and a > 100:
-                alpha = int((brightness - 200) / 30 * 255)
-                pixels[x, y] = (r, g, b, min(alpha, a))
-    
-    output = io.BytesIO()
-    img.save(output, format='PNG')
-    base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-    
-    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
-    if not firma:
-        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
-        db.session.add(firma)
-    else:
-        firma.archivo = base64_result
-    db.session.commit()
-    
-    return {'success': True, 'message': 'Firma procesada correctamente', 'base64': base64_result}
+    try:
+        img = Image.open(file)
+        original_mode = img.mode
+        print(f"[FIRMA_UPLOAD] Original image mode: {original_mode}, size: {img.size}")
+        
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
+        
+        pixels = img.load()
+        width, height = img.size
+        pixels_changed = 0
+        
+        for y in range(height):
+            for x in range(width):
+                r, g, b, a = pixels[x, y]
+                brightness = (r + g + b) / 3
+                if brightness > 230:
+                    pixels[x, y] = (r, g, b, 0)
+                    pixels_changed += 1
+                elif brightness > 200 and a > 100:
+                    alpha = int((brightness - 200) / 30 * 255)
+                    pixels[x, y] = (r, g, b, min(alpha, a))
+                    pixels_changed += 1
+        
+        print(f"[FIRMA_UPLOAD] Processed {pixels_changed} pixels to transparent")
+        
+        output = io.BytesIO()
+        img.save(output, format='PNG')
+        base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
+        
+        print(f"[FIRMA_UPLOAD] Base64 length: {len(base64_result)}, prefix: {base64_result[:30]}...")
+        
+        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        if not firma:
+            firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
+            db.session.add(firma)
+        else:
+            firma.archivo = base64_result
+        db.session.commit()
+        
+        print(f"[FIRMA_UPLOAD] Saved to DB, firma_id={firma.id}")
+        return jsonify({'success': True, 'message': 'Firma procesada correctamente', 'base64': base64_result})
+    except Exception as e:
+        import traceback
+        print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/')
 @login_required
