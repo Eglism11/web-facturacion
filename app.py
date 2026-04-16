@@ -244,13 +244,18 @@ def logout():
 def perfil():
     if request.method == 'POST':
         try:
-            current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
-            current_user.cedula = request.form.get('cedula', '').strip()
+            nombre = request.form.get('nombre_completo', '').strip()
+            cedula = request.form.get('cedula', '').strip()
+            print(f"[PERFIL] Guardando: nombre={nombre}, cedula={cedula}, usuario_id={current_user.id}")
+            current_user.nombre_completo = nombre
+            current_user.cedula = cedula
             db.session.commit()
+            print(f"[PERFIL] Guardado exitosamente")
             login_manager.reload_user()
             flash('Perfil actualizado correctamente', 'success')
         except Exception as e:
             db.session.rollback()
+            print(f"[PERFIL] Error: {str(e)}")
             flash(f'Error al guardar: {str(e)}', 'error')
         return redirect(url_for('perfil'))
     
@@ -719,6 +724,8 @@ def descargar_pdf(id):
     firma = cuenta.firma
 
     print(f"[PDF] Cliente: {cliente.nombre}, Firma: {firma}")
+    if firma:
+        print(f"[PDF] Firma archivo type: {type(firma.archivo)}, starts_with_data: {firma.archivo[:20] if firma.archivo else 'empty'}")
 
     pdf = FPDF()
     pdf.add_page()
@@ -813,13 +820,13 @@ def descargar_pdf(id):
             firma_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
         
         if firma_path and os.path.exists(firma_path):
+            print(f"[PDF] Adding signature image from: {firma_path}")
             pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
             pdf.ln(3)
-            if not firma.archivo.startswith('data:'):
-                pass
-            else:
+            if firma.archivo.startswith('data:'):
                 os.remove(firma_path)
         else:
+            print(f"[PDF] Signature file not found or path invalid")
             pdf.ln(8)
     else:
         pdf.ln(8)
