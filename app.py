@@ -486,21 +486,32 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # SOLO redimensionar - SIN procesamiento de fondo
-        max_width = 500
-        if img.width > max_width:
-            ratio = max_width / img.width
-            new_height = int(img.height * ratio)
-            img = img.resize((max_width, new_height), Image.LANCZOS)
+        # Convert to RGB if needed (for jpg to png conversion)
+        if img.mode == 'RGBA':
+            # Check if already has transparency - if so, keep it
+            pass
+        elif img.mode == 'L':
+            img = img.convert('RGB')
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize to fit within max dimensions while keeping aspect ratio
+        max_width = 600
+        max_height = 150
+        if img.width > max_width or img.height > max_height:
+            ratio = min(max_width / img.width, max_height / img.height)
+            new_w = int(img.width * ratio)
+            new_h = int(img.height * ratio)
+            img = img.resize((new_w, new_h), Image.LANCZOS)
             print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
         
         output = io.BytesIO()
-        img.save(output, format='PNG')
+        img.save(output, format='PNG', optimize=True)
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Length: {len(base64_result)}")
+        print(f"[FIRMA_UPLOAD] Saved: {len(base64_result)} chars")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
@@ -510,7 +521,7 @@ def subir_firma_procesada():
             firma.archivo = base64_result
         db.session.commit()
         
-        print(f"[FIRMA_UPLOAD] Saved, firma_id={firma.id}")
+        print(f"[FIRMA_UPLOAD] OK, firma_id={firma.id}")
         return jsonify({'success': True, 'message': 'Firma guardada', 'base64': base64_result})
     except Exception as e:
         import traceback
@@ -934,32 +945,48 @@ def descargar_pdf(id):
     pdf.multi_cell(0, 6, texto_tributario)
     pdf.ln(15)
 
-    sig_w_mm = 50
-    sig_h_mm = 25
+    sig_w_mm = 60
+    sig_h_mm = 20
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
-    if firma:
-        firma_path = None
+    
+    print(f"[PDF] Adding signature, firma={firma}")
+    
+    if firma and firma.archivo:
         if firma.archivo.startswith('data:'):
-            import tempfile
-            header, b64data = firma.archivo.split(',', 1)
-            img_data = base64.b64decode(b64data)
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-                tmp.write(img_data)
-                firma_path = tmp.name
+            try:
+                import tempfile
+                header, b64data = firma.archivo.split(',', 1)
+                img_data = base64.b64decode(b64data)
+                
+                # Save to temp file with proper extension
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+                    tmp.write(img_data)
+                    firma_path = tmp.name
+                
+                print(f"[PDF] Signature temp file: {firma_path}, size: {os.path.getsize(firma_path)}")
+                
+                if os.path.exists(firma_path) and os.path.getsize(firma_path) > 0:
+                    pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
+                    pdf.ln(3)
+                    os.remove(firma_path)
+                    print("[PDF] Signature added successfully")
+                else:
+                    print("[PDF] Temp file invalid or empty")
+                    pdf.ln(8)
+            except Exception as pdf_err:
+                print(f"[PDF] Error adding signature: {pdf_err}")
+                pdf.ln(8)
         else:
             processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
             firma_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
-        
-        if firma_path and os.path.exists(firma_path):
-            print(f"[PDF] Adding signature image from: {firma_path}")
-            pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-            pdf.ln(3)
-            if firma.archivo.startswith('data:'):
-                os.remove(firma_path)
-        else:
-            print(f"[PDF] Signature file not found or path invalid")
-            pdf.ln(8)
+            if os.path.exists(firma_path):
+                pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
+                pdf.ln(3)
+            else:
+                print(f"[PDF] Signature file not found: {firma_path}")
+                pdf.ln(8)
     else:
+        print("[PDF] No firma to display")
         pdf.ln(8)
 
     line_y = pdf.get_y()
