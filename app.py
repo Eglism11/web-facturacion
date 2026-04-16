@@ -486,27 +486,33 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Convert to RGB if needed (for jpg to png conversion)
-        if img.mode == 'RGBA':
-            # Check if already has transparency - if so, keep it
-            pass
-        elif img.mode == 'L':
-            img = img.convert('RGB')
-        elif img.mode != 'RGB':
-            img = img.convert('RGB')
+        # Convert to RGB/RGBA
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
         
-        # Resize to fit within max dimensions while keeping aspect ratio
-        max_width = 600
-        max_height = 150
-        if img.width > max_width or img.height > max_height:
-            ratio = min(max_width / img.width, max_height / img.height)
-            new_w = int(img.width * ratio)
-            new_h = int(img.height * ratio)
-            img = img.resize((new_w, new_h), Image.LANCZOS)
-            print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
+        # Get pixels - keep only dark strokes (not white background)
+        pixels = img.load()
+        w, h = img.size
+        
+        # Create new image with transparency
+        result = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        result_pixels = result.load()
+        
+        for y in range(h):
+            for x in range(w):
+                r, g, b, a = pixels[x, y]
+                # Keep pixels that are dark enough (signature strokes)
+                # Pure white (255,255,255) becomes transparent
+                # Dark colors (black, dark gray) stay
+                if r < 240 or g < 240 or b < 240:
+                    # This is likely part of the signature
+                    result_pixels[x, y] = (r, g, b, 255)
+        
+        # Resize to fit
+        result = result.resize((400, 100), Image.LANCZOS)
         
         output = io.BytesIO()
-        img.save(output, format='PNG', optimize=True)
+        result.save(output, format='PNG')
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
@@ -522,7 +528,7 @@ def subir_firma_procesada():
         db.session.commit()
         
         print(f"[FIRMA_UPLOAD] OK, firma_id={firma.id}")
-        return jsonify({'success': True, 'message': 'Firma guardada', 'base64': base64_result})
+        return jsonify({'success': True, 'message': 'Firma procesada', 'base64': base64_result})
     except Exception as e:
         import traceback
         print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
