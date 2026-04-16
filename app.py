@@ -486,30 +486,36 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Convert to RGB/RGBA
+        # Convert to RGBA
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        # Get pixels - keep only dark strokes (not white background)
+        # Resize first to speed up processing
+        max_width = 500
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+        
         pixels = img.load()
         w, h = img.size
         
-        # Create new image with transparency
+        # Create new transparent image
         result = Image.new('RGBA', (w, h), (0, 0, 0, 0))
         result_pixels = result.load()
         
+        # Only keep truly dark pixels (signature strokes)
         for y in range(h):
             for x in range(w):
                 r, g, b, a = pixels[x, y]
-                # Keep pixels that are dark enough (signature strokes)
-                # Pure white (255,255,255) becomes transparent
-                # Dark colors (black, dark gray) stay
-                if r < 240 or g < 240 or b < 240:
-                    # This is likely part of the signature
+                brightness = (r + g + b) / 3
+                # Keep only dark pixels (brightness < 200)
+                if brightness < 200:
+                    # Keep this pixel as part of signature
                     result_pixels[x, y] = (r, g, b, 255)
         
-        # Resize to fit
-        result = result.resize((400, 100), Image.LANCZOS)
+        # Resize to final size
+        result = result.resize((400, 80), Image.LANCZOS)
         
         output = io.BytesIO()
         result.save(output, format='PNG')
