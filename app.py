@@ -10,7 +10,7 @@ import io
 import os
 import uuid
 import base64
-from PIL import Image
+from PIL import Image, ImageChops
 
 print("[STARTUP] Loading app.py...")
 print("[STARTUP] Flask app created")
@@ -484,28 +484,36 @@ def subir_firma_procesada():
     
     try:
         img = Image.open(file)
-        original_mode = img.mode
-        print(f"[FIRMA_UPLOAD] Original image: {original_mode}, size: {img.size}")
-        
-        max_width = 350
-        if img.width > max_width:
-            ratio = max_width / img.width
-            new_height = int(img.height * ratio)
-            img = img.resize((max_width, new_height), Image.LANCZOS)
+        print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        gray = img.convert('L')
+        bg = Image.new('RGBA', img.size, (255, 255, 255, 255))
+        diff = ImageChops.difference(img, bg)
+        diff = ImageChops.add(diff, diff)
+        bbox = diff.getbbox()
+        if bbox:
+            img = img.crop(bbox)
         
-        threshold = 200
-        mask = gray.point(lambda x: 0 if x > threshold else 255, mode='1')
+        img = img.resize((300, 100), Image.LANCZOS)
         
-        result = Image.new('RGBA', img.size, (0, 0, 0, 0))
-        result.paste(img, mask=mask)
+        bg = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        
+        pixels = img.load()
+        w, h = img.size
+        
+        for y in range(h):
+            for x in range(w):
+                r, g, b, a = pixels[x, y]
+                if a < 10:
+                    continue
+                avg = (r + g + b) / 3
+                if avg > 200:
+                    pixels[x, y] = (r, g, b, 0)
         
         output = io.BytesIO()
-        result.save(output, format='PNG')
+        img.save(output, format='PNG', transparency=0)
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
@@ -520,8 +528,8 @@ def subir_firma_procesada():
             firma.archivo = base64_result
         db.session.commit()
         
-        print(f"[FIRMA_UPLOAD] Saved to DB, firma_id={firma.id}")
-        return jsonify({'success': True, 'message': 'Firma procesada correctamente', 'base64': base64_result})
+        print(f"[FIRMA_UPLOAD] Saved, firma_id={firma.id}")
+        return jsonify({'success': True, 'message': 'Firma procesada', 'base64': base64_result})
     except Exception as e:
         import traceback
         print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
