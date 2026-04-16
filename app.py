@@ -12,6 +12,7 @@ import uuid
 from PIL import Image
 
 print("[STARTUP] Loading app.py...")
+print("[STARTUP] Flask app created")
 
 app = Flask(__name__)
 app.config.from_object(Config)
