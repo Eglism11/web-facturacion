@@ -501,35 +501,28 @@ def subir_firma_procesada():
             img.save(output, format='PNG')
             output.seek(0)
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-            print(f"[FIRMA_UPLOAD] No filter, saved raw")
+            print(f"[FIRMA_UPLOAD] No filter")
         else:
-            # Procesar: suaves, forzar negro puro
-            if img.mode != 'RGBA':
-                img = img.convert('RGBA')
+            # Process: grayscale luminance mask - keeps anti-aliasing
+            gray = img.convert('L')  # Convert to grayscale
             
-            pixels = img.load()
-            w, h = img.size
+            # Convert grayscale to alpha channel
+            # Luminance 255 (white) -> transparent (0)
+            # Luminance 0 (black) -> opaque (255)
+            alpha = gray.point(lambda x: 255 - x, mode='L')
             
-            # Create new image with transparency
-            result = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-            result_pixels = result.load()
+            # Create RGBA with original RGB and new alpha
+            result = Image.new('RGBA', img.size)
+            result.paste(img, mask=alpha)
             
-            # Softer threshold: keep pixels where at least one channel < 150
-            # And force to pure black
-            for y in range(h):
-                for x in range(w):
-                    r, g, b, a = pixels[x, y]
-                    # If dark enough, keep as pure black
-                    if r < 150 or g < 150 or b < 150:
-                        result_pixels[x, y] = (0, 0, 0, 255)  # Pure black
-            
-            result = result.resize((400, 80), Image.LANCZOS)
+            # Resize to final
+            result = result.resize((400, 100), Image.LANCZOS)
             
             output = io.BytesIO()
             result.save(output, format='PNG')
             output.seek(0)
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-            print(f"[FIRMA_UPLOAD] Processed with soft filter")
+            print(f"[FIRMA_UPLOAD] Luminance mask applied")
         
         print(f"[FIRMA_UPLOAD] Saved: {len(base64_result)} chars")
         
