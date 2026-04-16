@@ -209,60 +209,7 @@ with app.app_context():
         admin.set_password(admin_password)
         admin.nombre_completo = admin_username
         db.session.add(admin)
-        db.session.commit()
-        print(f"Admin user created: {admin_username}")
-    else:
-        # NEVER overwrite existing user data, just verify password works
-        print(f"Admin user already exists: {admin_username}, nombre: {admin.nombre_completo}")
-
-
-# Login Routes
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '')
-        
-        print(f"[LOGIN] Attempting login for user: {username}")
-        user = Usuario.query.filter_by(username=username).first()
-        if user:
-            print(f"[LOGIN] User found, checking password...")
-            if user.check_password(password):
-                print(f"[LOGIN] Password OK, logging in")
-                login_user(user)
-                return redirect(url_for('index'))
-            else:
-                print(f"[LOGIN] Password failed")
-        else:
-            print(f"[LOGIN] User not found")
-        flash('Usuario o contraseña incorrectos', 'error')
-    
-    return render_template('login.html')
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-
-@app.route('/perfil', methods=['GET', 'POST'])
-@login_required
-def perfil():
-    if request.method == 'POST':
-        try:
-            nombre = request.form.get('nombre_completo', '').strip()
-            cedula = request.form.get('cedula', '').strip()
-            print(f"[PERFIL] Guardando: nombre={nombre}, cedula={cedula}, usuario_id={current_user.id}")
-            current_user.nombre_completo = nombre
-            current_user.cedula = cedula
-            db.session.commit()
-            print(f"[PERFIL] Guardado exitosamente")
-            login_manager.reload_user()
+db.session.commit()
             flash('Perfil actualizado correctamente', 'success')
         except Exception as e:
             db.session.rollback()
@@ -561,44 +508,90 @@ def listar_cuentas():
 @login_required
 def crear_cuenta():
     """Create new account"""
-    clientes = Cliente.query.order_by(Cliente.nombre).all()
-    firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
-    cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
-    
-    cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)
-    
-    perfil = {
-        'banco': cuenta_principal.nombre_banco if cuenta_principal else '',
-        'numero_cuenta': cuenta_principal.numero_cuenta if cuenta_principal else ''
-    }
+    try:
+        clientes = Cliente.query.order_by(Cliente.nombre).all()
+        firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
+        cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
+        
+        cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)
+        
+        perfil = {
+            'banco': cuenta_principal.nombre_banco if cuenta_principal else '',
+            'numero_cuenta': cuenta_principal.numero_cuenta if cuenta_principal else ''
+        }
 
-    if request.method == 'POST':
-        cliente_id = request.form['cliente_id']
-        concepto = request.form['concepto']
-        try:
-            monto = parse_monto_colombia(request.form.get('monto', ''))
-        except (ValueError, ArithmeticError):
-            flash('El monto no es válido. Usa solo números y separadores (ej: 5.000.000 o 5.000.000,50).', 'error')
-            return render_template(
-                'cuentas/create.html',
-                clientes=clientes,
-                firmas=firmas,
-                today=date.today().isoformat(),
-                perfil=perfil,
-                cuentas_bancarias=cuentas_bancarias,
+        if request.method == 'POST':
+            cliente_id = request.form['cliente_id']
+            concepto = request.form['concepto']
+            try:
+                monto = parse_monto_colombia(request.form.get('monto', ''))
+            except (ValueError, ArithmeticError):
+                flash('El monto no es válido. Usa solo números y separadores (ej: 5.000.000 o 5.000.000,50).', 'error')
+                return render_template(
+                    'cuentas/create.html',
+                    clientes=clientes,
+                    firmas=firmas,
+                    today=date.today().isoformat(),
+                    perfil=perfil,
+                    cuentas_bancarias=cuentas_bancarias,
+                )
+            fecha_documento = datetime.strptime(request.form['fecha_documento'], '%Y-%m-%d').date()
+            
+            firma_id = request.form.get('firma_id') or None
+            if not firma_id:
+                firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+                if firma_usuario:
+                    firma_id = firma_usuario.id
+            
+            cuenta_bancaria_id = request.form.get('cuenta_bancaria_id')
+            numero_cuenta_pago = ''
+            
+            if cuenta_bancaria_id:
+                cuenta_banc = CuentaBancaria.query.get(cuenta_bancaria_id)
+                if cuenta_banc and cuenta_banc.usuario_id == current_user.id:
+                    numero_cuenta_pago = f"{cuenta_banc.numero_cuenta} ({cuenta_banc.nombre_banco} - {cuenta_banc.tipo_cuenta})"
+            
+            if not numero_cuenta_pago:
+                numero_cuenta_pago = request.form.get('numero_cuenta_pago', '').strip()
+            
+            if not numero_cuenta_pago:
+                flash('Selecciona una cuenta bancaria o escribe el número manualmente', 'error')
+                return render_template(
+                    'cuentas/create.html',
+                    clientes=clientes,
+                    firmas=firmas,
+                    today=date.today().isoformat(),
+                    perfil=perfil,
+                    cuentas_bancarias=cuentas_bancarias,
+                )
+
+            year = fecha_documento.year
+            count = Cuenta.query.filter(
+                db.extract('year', Cuenta.fecha_documento) == year
+            ).count() + 1
+            numero_factura = f"FAC-{year}-{count:04d}"
+
+            cuenta = Cuenta(
+                cliente_id=cliente_id,
+                concepto=concepto,
+                monto=monto,
+                numero_factura=numero_factura,
+                fecha_documento=fecha_documento,
+                firma_id=firma_id,
+                numero_cuenta_pago=numero_cuenta_pago,
+                estado=request.form.get('estado', 'pendiente')
             )
-        fecha_documento = datetime.strptime(request.form['fecha_documento'], '%Y-%m-%d').date()
-        
-        firma_id = request.form.get('firma_id') or None
-        if not firma_id:
-            firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
-            if firma_usuario:
-                firma_id = firma_usuario.id
-        
-        cuenta_bancaria_id = request.form.get('cuenta_bancaria_id')
-        numero_cuenta_pago = ''
-        
-        if cuenta_bancaria_id:
+            db.session.add(cuenta)
+            db.session.commit()
+
+            flash(f'Cuenta de cobro {numero_factura} creada', 'success')
+            return redirect(url_for('ver_cuenta', id=cuenta.id))
+
+        return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil, cuentas_bancarias=cuentas_bancarias)
+    except Exception as e:
+        print(f"[CREAR_CUENTA] Error: {e}")
+        flash(f'Error: {str(e)}', 'error')
+        return redirect(url_for('index'))
             cuenta_banc = CuentaBancaria.query.get(cuenta_bancaria_id)
             if cuenta_banc and cuenta_banc.usuario_id == current_user.id:
                 numero_cuenta_pago = f"{cuenta_banc.numero_cuenta} ({cuenta_banc.nombre_banco} - {cuenta_banc.tipo_cuenta})"
