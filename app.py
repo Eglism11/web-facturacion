@@ -488,59 +488,48 @@ def subir_firma_procesada():
         
         sin_filtro = request.form.get('sin_filtro', '0') == '1'
         
+        # Always resize first
+        max_width = 450
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+        
         if sin_filtro:
             # NO procesar - guardar tal cual
-            max_width = 400
-            if img.width > max_width:
-                ratio = max_width / img.width
-                new_height = int(img.height * ratio)
-                img = img.resize((max_width, new_height), Image.LANCZOS)
-            
             output = io.BytesIO()
             img.save(output, format='PNG')
             output.seek(0)
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
+            print(f"[FIRMA_UPLOAD] No filter, saved raw")
         else:
-            # Procesar con filtro
-            # Convert to RGBA
+            # Procesar: suaves, forzar negro puro
             if img.mode != 'RGBA':
                 img = img.convert('RGBA')
             
-            # Resize
-            max_width = 400
-            if img.width > max_width:
-                ratio = max_width / img.width
-                new_height = int(img.height * ratio)
-                img = img.resize((max_width, new_height), Image.LANCZOS)
+            pixels = img.load()
+            w, h = img.size
             
-            # Better algorithm: use grayscale + contrast
-            gray = img.convert('L')
+            # Create new image with transparency
+            result = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+            result_pixels = result.load()
             
-            # Apply threshold
-            threshold = 180
-            binary = gray.point(lambda x: 0 if x > threshold else 255, mode='1')
-            
-            # Convert back to RGBA and apply as mask
-            result = img.copy()
-            result.putalpha(binary)
-            
-            # Make white (background) transparent
-            result = result.convert('RGBA')
-            pixels = result.load()
-            w, h = result.size
-            
+            # Softer threshold: keep pixels where at least one channel < 150
+            # And force to pure black
             for y in range(h):
                 for x in range(w):
                     r, g, b, a = pixels[x, y]
-                    if r > 200 and g > 200 and b > 200:
-                        pixels[x, y] = (r, g, b, 0)
+                    # If dark enough, keep as pure black
+                    if r < 150 or g < 150 or b < 150:
+                        result_pixels[x, y] = (0, 0, 0, 255)  # Pure black
             
-            result = result.resize((350, 80), Image.LANCZOS)
+            result = result.resize((400, 80), Image.LANCZOS)
             
             output = io.BytesIO()
             result.save(output, format='PNG')
             output.seek(0)
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
+            print(f"[FIRMA_UPLOAD] Processed with soft filter")
         
         print(f"[FIRMA_UPLOAD] Saved: {len(base64_result)} chars")
         
