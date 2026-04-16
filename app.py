@@ -22,15 +22,14 @@ def handle_500_error(e):
     import traceback
     error_msg = traceback.format_exc()
     print(f"[ERROR 500] {error_msg}")
-    return f"Error interno del servidor: {str(e)}", 500
+    return f"Error interno del servidor: {str(e)}<br><pre>{error_msg}</pre>", 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     import traceback
     error_msg = traceback.format_exc()
     print(f"[UNHANDLED EXCEPTION] {error_msg}")
-    flash(f'Error: {str(e)}', 'error')
-    return redirect(url_for('index'))
+    return f"Error: {str(e)}<br><pre>{error_msg}</pre>", 500
 
 print("[STARTUP] Config loaded, initializing DB...")
 
@@ -43,6 +42,31 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        user = Usuario.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            flash('Bienvenido', 'success')
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
+        
+        flash('Usuario o contraseña incorrectos', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Sesión cerrada', 'info')
+    return redirect(url_for('login'))
 
 SIGNATURE_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas')
 SIGNATURE_PROCESSED_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas_procesadas')
@@ -259,8 +283,7 @@ def perfil():
         import traceback
         print(f"[PERFIL] Error: {traceback.format_exc()}")
         db.session.rollback()
-        flash(f'Error al cargar perfil: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        return f"Error al cargar perfil: {str(e)}<br><pre>{traceback.format_exc()}</pre>", 500
 
 
 @app.route('/perfil/cuenta-bancaria/agregar', methods=['POST'])
