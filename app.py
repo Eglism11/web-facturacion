@@ -209,7 +209,25 @@ with app.app_context():
         admin.set_password(admin_password)
         admin.nombre_completo = admin_username
         db.session.add(admin)
-db.session.commit()
+        db.session.commit()
+        print(f"Admin user created: {admin_username}")
+    else:
+        # NEVER overwrite existing user data, just verify password works
+        print(f"Admin user already exists: {admin_username}, nombre: {admin.nombre_completo}")
+
+
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def perfil():
+    if request.method == 'POST':
+        try:
+            nombre = request.form.get('nombre_completo', '').strip()
+            cedula = request.form.get('cedula', '').strip()
+            print(f"[PERFIL] Guardando: nombre={nombre}, cedula={cedula}, usuario_id={current_user.id}")
+            current_user.nombre_completo = nombre
+            current_user.cedula = cedula
+            db.session.commit()
+            print(f"[PERFIL] Guardado exitosamente")
             flash('Perfil actualizado correctamente', 'success')
         except Exception as e:
             db.session.rollback()
@@ -592,49 +610,7 @@ def crear_cuenta():
         print(f"[CREAR_CUENTA] Error: {e}")
         flash(f'Error: {str(e)}', 'error')
         return redirect(url_for('index'))
-            cuenta_banc = CuentaBancaria.query.get(cuenta_bancaria_id)
-            if cuenta_banc and cuenta_banc.usuario_id == current_user.id:
-                numero_cuenta_pago = f"{cuenta_banc.numero_cuenta} ({cuenta_banc.nombre_banco} - {cuenta_banc.tipo_cuenta})"
-        
-        if not numero_cuenta_pago:
-            numero_cuenta_pago = request.form.get('numero_cuenta_pago', '').strip()
-        
-        if not numero_cuenta_pago:
-            flash('Selecciona una cuenta bancaria o escribe el número manualmente', 'error')
-            return render_template(
-                'cuentas/create.html',
-                clientes=clientes,
-                firmas=firmas,
-                today=date.today().isoformat(),
-                perfil=perfil,
-                cuentas_bancarias=cuentas_bancarias,
-            )
 
-        year = fecha_documento.year
-        count = Cuenta.query.filter(
-            db.extract('year', Cuenta.fecha_documento) == year
-        ).count() + 1
-        numero_factura = f"FAC-{year}-{count:04d}"
-
-        estado = request.form.get('estado', 'pendiente')
-        
-        cuenta = Cuenta(
-            cliente_id=cliente_id,
-            concepto=concepto,
-            monto=monto,
-            numero_factura=numero_factura,
-            fecha_documento=fecha_documento,
-            firma_id=firma_id,
-            numero_cuenta_pago=numero_cuenta_pago,
-            estado=estado
-        )
-        db.session.add(cuenta)
-        db.session.commit()
-
-        flash(f'Cuenta de cobro {numero_factura} creada', 'success')
-        return redirect(url_for('ver_cuenta', id=cuenta.id))
-
-    return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil, cuentas_bancarias=cuentas_bancarias)
 
 @app.route('/cuentas/<int:id>')
 @login_required
