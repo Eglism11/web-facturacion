@@ -498,8 +498,6 @@ def subir_firma_procesada():
         
         img = img.resize((300, 100), Image.LANCZOS)
         
-        bg = Image.new('RGBA', img.size, (0, 0, 0, 0))
-        
         pixels = img.load()
         w, h = img.size
         
@@ -513,7 +511,7 @@ def subir_firma_procesada():
                     pixels[x, y] = (r, g, b, 0)
         
         output = io.BytesIO()
-        img.save(output, format='PNG', transparency=0)
+        img.save(output, format='PNG')
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
