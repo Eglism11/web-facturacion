@@ -539,7 +539,7 @@ def listar_cuentas():
 def crear_cuenta():
     """Create new account"""
     clientes = Cliente.query.order_by(Cliente.nombre).all()
-    firmas = Firma.query.order_by(Firma.nombre).all()
+    firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
     cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
     
     cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)

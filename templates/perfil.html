@@ -166,6 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Por favor dibuja tu firma primero');
             return;
         }
+        
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+        
         const dataUrl = signaturePad.toDataURL('image/png');
         document.getElementById('firma_data').value = dataUrl;
         
@@ -174,6 +179,8 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({firma: dataUrl})
         }).then(r => r.json()).then(data => {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Firma';
             if (data.success) {
                 alert(data.message || 'Firma guardada correctamente');
                 document.getElementById('firma-preview').classList.remove('hidden');
@@ -190,6 +197,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = e.target.files[0];
         if (!file) return;
         
+        const btn = document.getElementById('save-signature');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+        
         const formData = new FormData();
         formData.append('imagen', file);
         
@@ -197,6 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData
         }).then(r => r.json()).then(data => {
+            btn.disabled = false;
+            btn.textContent = originalText;
             if (data.success) {
                 alert(data.message || 'Firma procesada correctamente');
                 document.getElementById('firma-preview').classList.remove('hidden');
