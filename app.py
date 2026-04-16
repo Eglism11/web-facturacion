@@ -10,7 +10,7 @@ import io
 import os
 import uuid
 import base64
-from PIL import Image
+from PIL import Image, ImageOps
 
 print("[STARTUP] Loading app.py...")
 print("[STARTUP] Flask app created")
@@ -503,26 +503,22 @@ def subir_firma_procesada():
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
             print(f"[FIRMA_UPLOAD] No filter")
         else:
-            # Process: grayscale luminance mask - keeps anti-aliasing
-            gray = img.convert('L')  # Convert to grayscale
+            # Better algorithm using PIL like the suggested code
+            gray = img.convert('L')  # Grayscale
+            gray = ImageOps.autocontrast(gray, cutoff=2)  # Normalize whites/blacks
+            mask = ImageOps.invert(gray)  # Invert for opacity mask
             
-            # Convert grayscale to alpha channel
-            # Luminance 255 (white) -> transparent (0)
-            # Luminance 0 (black) -> opaque (255)
-            alpha = gray.point(lambda x: 255 - x, mode='L')
+            # Create pure black signature with mask
+            result = Image.new('RGBA', gray.size, (0, 0, 0, 0))
+            result.paste((0, 0, 0, 255), (0, 0), mask=mask)
             
-            # Create RGBA with original RGB and new alpha
-            result = Image.new('RGBA', img.size)
-            result.paste(img, mask=alpha)
-            
-            # Resize to final
             result = result.resize((400, 100), Image.LANCZOS)
             
             output = io.BytesIO()
             result.save(output, format='PNG')
             output.seek(0)
             base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-            print(f"[FIRMA_UPLOAD] Luminance mask applied")
+            print(f"[FIRMA_UPLOAD] Processed with autocontrast + invert mask")
         
         print(f"[FIRMA_UPLOAD] Saved: {len(base64_result)} chars")
         
