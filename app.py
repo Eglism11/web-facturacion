@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import io
 import os
 import uuid
+import base64
 from PIL import Image
 
 print("[STARTUP] Loading app.py...")
