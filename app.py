@@ -243,11 +243,15 @@ def logout():
 @login_required
 def perfil():
     if request.method == 'POST':
-        current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
-        current_user.cedula = request.form.get('cedula', '').strip()
-        db.session.commit()
-        login_manager.reload_user()
-        flash('Perfil actualizado correctamente', 'success')
+        try:
+            current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
+            current_user.cedula = request.form.get('cedula', '').strip()
+            db.session.commit()
+            login_manager.reload_user()
+            flash('Perfil actualizado correctamente', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al guardar: {str(e)}', 'error')
         return redirect(url_for('perfil'))
     
     cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).all()
