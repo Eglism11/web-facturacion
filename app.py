@@ -420,14 +420,6 @@ def guardar_firma_base64():
         db.session.rollback()
         print(f"[FIRMA] Error guardando: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
-            firma.archivo = base64_result
-        db.session.commit()
-        print(f"[FIRMA] Guardada exitosamente para usuario {current_user.id}, id={firma.id}")
-        return jsonify({'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result})
-    except Exception as e:
-        db.session.rollback()
-        print(f"[FIRMA] Error guardando: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
