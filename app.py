@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from config import Config
 from models import db, Cliente, Cuenta, Firma, Usuario, CuentaBancaria
@@ -369,7 +369,7 @@ def guardar_firma_base64():
         img_data = base64.b64decode(b64data)
     except Exception as e:
         print(f"[FIRMA] Error decoding base64: {e}")
-        return {'success': False, 'error': str(e)}
+        return jsonify({'success': False, 'error': str(e)}), 400
     
     from PIL import Image
     import io
@@ -403,12 +403,12 @@ def guardar_firma_base64():
         else:
             firma.archivo = base64_result
         db.session.commit()
-        print(f"[FIRMA] Guardada exitosamente para usuario {current_user.id}")
-        return {'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result}
+        print(f"[FIRMA] Guardada exitosamente para usuario {current_user.id}, id={firma.id}")
+        return jsonify({'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result})
     except Exception as e:
         db.session.rollback()
         print(f"[FIRMA] Error guardando: {e}")
-        return {'success': False, 'error': str(e)}
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
