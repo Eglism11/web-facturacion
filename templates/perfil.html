@@ -110,7 +110,7 @@
         {% if firma_actual %}
         <div class="mb-4 p-3 border rounded-lg bg-emerald-50">
             <p class="text-sm text-gray-600 mb-2">Firma registrada:</p>
-            <img src="{{ firma_actual }}" alt="Firma actual" class="h-24 object-contain border bg-white">
+            <img src="{{ firma_actual }}" alt="Firma actual" class="h-24 object-contain" style="background: transparent;">
             <button type="button" id="delete-firma-btn" class="mt-3 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
                 Eliminar Firma
             </button>
@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 btn.disabled = false;
                 btn.textContent = originalText;
+                console.log('Upload response:', data);
                 if (data.success) {
                     alert('✅ ' + (data.message || 'Firma guardada correctamente'));
                     location.reload();

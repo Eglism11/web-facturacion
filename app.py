@@ -10,7 +10,7 @@ import io
 import os
 import uuid
 import base64
-from PIL import Image, ImageChops
+from PIL import Image
 
 print("[STARTUP] Loading app.py...")
 print("[STARTUP] Flask app created")
@@ -489,13 +489,6 @@ def subir_firma_procesada():
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        bg = Image.new('RGBA', img.size, (255, 255, 255, 255))
-        diff = ImageChops.difference(img, bg)
-        diff = ImageChops.add(diff, diff)
-        bbox = diff.getbbox()
-        if bbox:
-            img = img.crop(bbox)
-        
         img = img.resize((300, 100), Image.LANCZOS)
         
         pixels = img.load()
@@ -504,10 +497,10 @@ def subir_firma_procesada():
         for y in range(h):
             for x in range(w):
                 r, g, b, a = pixels[x, y]
-                if a < 10:
+                if a < 50:
                     continue
-                avg = (r + g + b) / 3
-                if avg > 200:
+                brightness = (r + g + b) / 3
+                if brightness > 150:
                     pixels[x, y] = (r, g, b, 0)
         
         output = io.BytesIO()
