@@ -486,41 +486,20 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        sin_filtro = request.form.get('sin_filtro', '0') == '1'
-        
-        # Always resize first
-        max_width = 450
+        # Simple resize only - NO processing
+        max_width = 400
         if img.width > max_width:
             ratio = max_width / img.width
             new_height = int(img.height * ratio)
             img = img.resize((max_width, new_height), Image.LANCZOS)
         
-        if sin_filtro:
-            # NO procesar - guardar tal cual
-            output = io.BytesIO()
-            img.save(output, format='PNG')
-            output.seek(0)
-            base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-            print(f"[FIRMA_UPLOAD] No filter")
-        else:
-            # Better algorithm using PIL like the suggested code
-            gray = img.convert('L')  # Grayscale
-            gray = ImageOps.autocontrast(gray, cutoff=2)  # Normalize whites/blacks
-            mask = ImageOps.invert(gray)  # Invert for opacity mask
-            
-            # Create pure black signature with mask
-            result = Image.new('RGBA', gray.size, (0, 0, 0, 0))
-            result.paste((0, 0, 0, 255), (0, 0), mask=mask)
-            
-            result = result.resize((400, 100), Image.LANCZOS)
-            
-            output = io.BytesIO()
-            result.save(output, format='PNG')
-            output.seek(0)
-            base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-            print(f"[FIRMA_UPLOAD] Processed with autocontrast + invert mask")
+        output = io.BytesIO()
+        img.save(output, format='PNG')
+        output.seek(0)
         
-        print(f"[FIRMA_UPLOAD] Saved: {len(base64_result)} chars")
+        base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
+        
+        print(f"[FIRMA_UPLOAD] Simple resize only, saved: {len(base64_result)} chars")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
