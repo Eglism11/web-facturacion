@@ -133,6 +133,9 @@
         <div class="mt-4">
             <p class="text-sm text-gray-500 mb-2">O sube una imagen (se eliminará el fondo automáticamente):</p>
             <input type="file" id="firma-imagen" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+            <button type="button" id="upload-firma-btn" class="mt-2 px-4 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">
+                Subir Firma
+            </button>
         </div>
     </div>
 
@@ -167,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         signaturePad.clear();
     });
 
+    // Botón guardar del canvas (dibujar firma)
     document.getElementById('save-signature').addEventListener('click', function() {
         if (signaturePad.isEmpty()) {
             alert('Por favor dibuja tu firma primero');
@@ -178,56 +182,83 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.textContent = 'Guardando...';
         
         const dataUrl = signaturePad.toDataURL('image/png');
-        document.getElementById('firma_data').value = dataUrl;
         
         fetch('{{ url_for("guardar_firma_base64") }}', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({firma: dataUrl})
-        }).then(r => r.json()).then(data => {
+        })
+        .then(r => {
+            if (!r.ok) throw new Error('Error del servidor: ' + r.status);
+            return r.json();
+        })
+        .then(data => {
             btn.disabled = false;
             btn.textContent = 'Guardar Firma';
             if (data.success) {
                 alert(data.message || 'Firma guardada correctamente');
-                document.getElementById('firma-preview').classList.remove('hidden');
-                document.getElementById('firma-placeholder')?.classList.add('hidden');
-                document.getElementById('firma-img').src = data.base64 || data.filename;
                 location.reload();
             } else {
                 alert('Error: ' + (data.error || 'Error desconocido'));
             }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Firma';
+            console.error('Error:', err);
+            alert('Error de conexión: ' + err.message);
         });
     });
 
-    document.getElementById('firma-imagen').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const btn = document.getElementById('save-signature');
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Procesando...';
-        
-        const formData = new FormData();
-        formData.append('imagen', file);
-        
-        fetch('{{ url_for("subir_firma_procesada") }}', {
-            method: 'POST',
-            body: formData
-        }).then(r => r.json()).then(data => {
-            btn.disabled = false;
-            btn.textContent = originalText;
-            if (data.success) {
-                alert(data.message || 'Firma procesada correctamente');
-                document.getElementById('firma-preview').classList.remove('hidden');
-                document.getElementById('firma-placeholder')?.classList.add('hidden');
-                document.getElementById('firma-img').src = data.base64 || data.filename;
-                location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'Error desconocido'));
+    // Input de subir imagen
+    const fileInput = document.getElementById('firma-imagen');
+    const uploadBtn = document.getElementById('upload-firma-btn');
+    
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Selecciona una imagen primero');
+                return;
             }
+            
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+            
+            const formData = new FormData();
+            formData.append('imagen', file);
+            
+            fetch('{{ url_for("subir_firma_procesada") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Error del servidor: ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = 'Subir Firma';
+                if (data.success) {
+                    alert(data.message || 'Firma procesada correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.textContent = 'Subir Firma';
+                console.error('Error:', err);
+                alert('Error de conexión: ' + err.message);
+            });
         });
-    });
+    }
+    
+    // Debug: mostrar si hay firma cargada
+    const firmaActual = '{{ firma_actual[:50] if firma_actual else "" }}';
+    console.log('[PERFIL] Firma actual cargada:', firmaActual ? 'Sí (' + firmaActual + '...)' : 'No');
 });
 </script>
 {% endblock %}

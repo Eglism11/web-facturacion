@@ -103,13 +103,13 @@
                 </label>
                 <select name="firma_id" id="firma_id"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Sin firma</option>
+                    <option value="">Mi firma guardada (automático)</option>
                     {% for firma in firmas %}
                     <option value="{{ firma.id }}">{{ firma.nombre }}</option>
                     {% endfor %}
                 </select>
                 <p class="mt-2 text-xs text-gray-500">
-                    O usa tu firma guardada en "Mi Perfil"
+                    Se usará automáticamente tu firma de "Mi Perfil"
                 </p>
             </div>
 
