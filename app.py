@@ -207,9 +207,16 @@ with app.app_context():
     if not admin:
         admin = Usuario(username=admin_username)
         admin.set_password(admin_password)
+        admin.nombre_completo = admin_username
         db.session.add(admin)
         db.session.commit()
         print(f"Admin user created: {admin_username}")
+    else:
+        # Update password if using legacy hash
+        if not admin.password_hash.startswith('pbkdf2:sha256'):
+            admin.set_password(admin_password)
+            db.session.commit()
+            print(f"Admin password migrated to Werkzeug hash")
 
 
 # Login Routes
@@ -349,6 +356,7 @@ def guardar_firma_base64():
     try:
         img_data = base64.b64decode(b64data)
     except Exception as e:
+        print(f"[FIRMA] Error decoding base64: {e}")
         return {'success': False, 'error': str(e)}
     
     from PIL import Image
@@ -371,20 +379,24 @@ def guardar_firma_base64():
                 alpha = int((brightness - 200) / 30 * 255)
                 pixels[x, y] = (r, g, b, min(alpha, a))
     
-    import io
     output = io.BytesIO()
     img.save(output, format='PNG')
     base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
     
-    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
-    if not firma:
-        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
-        db.session.add(firma)
-    else:
-        firma.archivo = base64_result
-    db.session.commit()
-    
-    return {'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result}
+    try:
+        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        if not firma:
+            firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
+            db.session.add(firma)
+        else:
+            firma.archivo = base64_result
+        db.session.commit()
+        print(f"[FIRMA] Guardada exitosamente para usuario {current_user.id}")
+        return {'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result}
+    except Exception as e:
+        db.session.rollback()
+        print(f"[FIRMA] Error guardando: {e}")
+        return {'success': False, 'error': str(e)}
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
