@@ -172,10 +172,10 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({firma: dataUrl})
         }).then(r => r.json()).then(data => {
             if (data.success) {
-                alert('Firma guardada correctamente');
+                alert(data.message || 'Firma guardada correctamente');
                 location.reload();
             } else {
-                alert('Error: ' + data.error);
+                alert('Error: ' + (data.error || 'Error desconocido'));
             }
         });
     });
@@ -192,10 +192,10 @@ document.addEventListener('DOMContentLoaded', function() {
             body: formData
         }).then(r => r.json()).then(data => {
             if (data.success) {
-                alert('Firma procesada y guardada');
+                alert(data.message || 'Firma procesada correctamente');
                 location.reload();
             } else {
-                alert('Error: ' + data.error);
+                alert('Error: ' + (data.error || 'Error desconocido'));
             }
         });
     });

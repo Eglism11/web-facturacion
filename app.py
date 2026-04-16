@@ -361,7 +361,7 @@ def guardar_firma_base64():
         firma.archivo = filename
     db.session.commit()
     
-    return {'success': True}
+    return {'success': True, 'message': 'Firma guardada correctamente'}
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
@@ -414,7 +414,7 @@ def subir_firma_procesada():
         firma.archivo = processed_filename
     db.session.commit()
     
-    return {'success': True}
+    return {'success': True, 'message': 'Firma procesada correctamente'}
 
 @app.route('/')
 @login_required
@@ -595,6 +595,8 @@ def crear_cuenta():
         ).count() + 1
         numero_factura = f"FAC-{year}-{count:04d}"
 
+        estado = request.form.get('estado', 'pendiente')
+        
         cuenta = Cuenta(
             cliente_id=cliente_id,
             concepto=concepto,
@@ -603,7 +605,7 @@ def crear_cuenta():
             fecha_documento=fecha_documento,
             firma_id=firma_id,
             numero_cuenta_pago=numero_cuenta_pago,
-            estado='pendiente'
+            estado=estado
         )
         db.session.add(cuenta)
         db.session.commit()
