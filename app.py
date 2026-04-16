@@ -10,7 +10,7 @@ import io
 import os
 import uuid
 import base64
-from PIL import Image, ImageChops
+from PIL import Image
 
 print("[STARTUP] Loading app.py...")
 print("[STARTUP] Flask app created")
@@ -486,32 +486,13 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Convert to RGBA
-        if img.mode != 'RGBA':
-            img = img.convert('RGBA')
-        
-        # Crop to content area (remove white margins)
-        bg = Image.new('RGBA', img.size, (255, 255, 255, 255))
-        diff = ImageChops.difference(img, bg)
-        diff = ImageChops.add(diff, diff)
-        bbox = diff.getbbox()
-        if bbox:
-            img = img.crop(bbox)
-            print(f"[FIRMA_UPLOAD] Cropped to: {bbox}")
-        
-        # Now remove white background with higher threshold
-        pixels = img.load()
-        w, h = img.size
-        
-        for y in range(h):
-            for x in range(w):
-                r, g, b, a = pixels[x, y]
-                brightness = (r + g + b) / 3
-                if brightness > 240:
-                    pixels[x, y] = (r, g, b, 0)
-        
-        # Resize to reasonable size
-        img = img.resize((350, 100), Image.LANCZOS)
+        # SOLO redimensionar - SIN procesamiento de fondo
+        max_width = 500
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+            print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
         
         output = io.BytesIO()
         img.save(output, format='PNG')
@@ -530,7 +511,7 @@ def subir_firma_procesada():
         db.session.commit()
         
         print(f"[FIRMA_UPLOAD] Saved, firma_id={firma.id}")
-        return jsonify({'success': True, 'message': 'Firma procesada', 'base64': base64_result})
+        return jsonify({'success': True, 'message': 'Firma guardada', 'base64': base64_result})
     except Exception as e:
         import traceback
         print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
