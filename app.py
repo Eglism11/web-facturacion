@@ -17,6 +17,21 @@ print("[STARTUP] Flask app created")
 app = Flask(__name__)
 app.config.from_object(Config)
 
+@app.errorhandler(500)
+def handle_500_error(e):
+    import traceback
+    error_msg = traceback.format_exc()
+    print(f"[ERROR 500] {error_msg}")
+    return f"Error interno del servidor: {str(e)}", 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    error_msg = traceback.format_exc()
+    print(f"[UNHANDLED EXCEPTION] {error_msg}")
+    flash(f'Error: {str(e)}', 'error')
+    return redirect(url_for('index'))
+
 print("[STARTUP] Config loaded, initializing DB...")
 
 db.init_app(app)
@@ -219,8 +234,9 @@ with app.app_context():
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required
 def perfil():
-    if request.method == 'POST':
-        try:
+    print(f"[PERFIL] Request method: {request.method}, user_id: {current_user.id}")
+    try:
+        if request.method == 'POST':
             nombre = request.form.get('nombre_completo', '').strip()
             cedula = request.form.get('cedula', '').strip()
             print(f"[PERFIL] Guardando: nombre={nombre}, cedula={cedula}, usuario_id={current_user.id}")
@@ -229,20 +245,22 @@ def perfil():
             db.session.commit()
             print(f"[PERFIL] Guardado exitosamente")
             flash('Perfil actualizado correctamente', 'success')
-        except Exception as e:
-            db.session.rollback()
-            print(f"[PERFIL] Error: {str(e)}")
-            flash(f'Error al guardar: {str(e)}', 'error')
-        return redirect(url_for('perfil'))
-    
-    cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).all()
-    
-    firma_actual = None
-    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
-    if firma:
-        firma_actual = firma.archivo  # Base64 string directly
-    
-    return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
+            return redirect(url_for('perfil'))
+        
+        cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).all()
+        
+        firma_actual = None
+        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        if firma:
+            firma_actual = firma.archivo  # Base64 string directly
+        
+        return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
+    except Exception as e:
+        import traceback
+        print(f"[PERFIL] Error: {traceback.format_exc()}")
+        db.session.rollback()
+        flash(f'Error al cargar perfil: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 
 @app.route('/perfil/cuenta-bancaria/agregar', methods=['POST'])
@@ -527,9 +545,16 @@ def listar_cuentas():
 def crear_cuenta():
     """Create new account"""
     try:
+        print(f"[CREAR_CUENTA] Starting, user_id={current_user.id}")
+        
         clientes = Cliente.query.order_by(Cliente.nombre).all()
+        print(f"[CREAR_CUENTA] Clientes count: {len(clientes)}")
+        
         firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
+        print(f"[CREAR_CUENTA] Firmas count: {len(firmas)}")
+        
         cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
+        print(f"[CREAR_CUENTA] Cuentas bancarias count: {len(cuentas_bancarias)}")
         
         cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)
         
