@@ -205,7 +205,7 @@ def ensure_schema_updates():
                 CREATE TABLE firmas (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombre VARCHAR(120) NOT NULL,
-                    archivo VARCHAR(255) NOT NULL,
+                    archivo TEXT NOT NULL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -214,10 +214,51 @@ def ensure_schema_updates():
                 CREATE TABLE firmas (
                     id SERIAL PRIMARY KEY,
                     nombre VARCHAR(120) NOT NULL,
-                    archivo VARCHAR(255) NOT NULL,
+                    archivo TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+    else:
+        firma_columns = {col['name'] for col in inspector.get_columns('firmas')}
+        if 'archivo' in firma_columns:
+            col = inspector.get_columns('firmas')
+            archivo_col = next((c for c in col if c['name'] == 'archivo'), None)
+            if archivo_col and archivo_col['type'] and 'varchar' in str(archivo_col['type']).lower():
+                statements.append("ALTER TABLE firmas ALTER COLUMN archivo TYPE TEXT")
+
+    if 'cuentas' in tables:
+        cuenta_columns = {col['name'] for col in inspector.get_columns('cuentas')}
+        if 'fecha_documento' not in cuenta_columns:
+            if db.engine.dialect.name == 'sqlite':
+                statements.append("ALTER TABLE cuentas ADD COLUMN fecha_documento DATE")
+                statements.append("UPDATE cuentas SET fecha_documento = DATE(created_at) WHERE fecha_documento IS NULL")
+            else:
+                statements.append("ALTER TABLE cuentas ADD COLUMN fecha_documento DATE")
+                statements.append("UPDATE cuentas SET fecha_documento = DATE(created_at) WHERE fecha_documento IS NULL")
+                statements.append("ALTER TABLE cuentas ALTER COLUMN fecha_documento SET NOT NULL")
+
+        if 'firma_id' not in cuenta_columns:
+            statements.append("ALTER TABLE cuentas ADD COLUMN firma_id INTEGER REFERENCES firmas(id)")
+
+        if 'numero_cuenta_pago' not in cuenta_columns:
+            statements.append("ALTER TABLE cuentas ADD COLUMN numero_cuenta_pago VARCHAR(120)")
+            
+        cuenta_col = inspector.get_columns('cuentas')
+        monto_col = next((c for c in cuenta_col if c['name'] == 'monto'), None)
+        if monto_col and monto_col['type'] and 'numeric' in str(monto_col['type']).lower():
+            statements.append("ALTER TABLE cuentas ALTER COLUMN monto TYPE NUMERIC(15,2)")
+
+    if statements:
+        print(f"[SCHEMA] Running {len(statements)} migrations...")
+        for stmt in statements:
+            print(f"[SCHEMA] Execute: {stmt[:80]}...")
+        with db.engine.begin() as connection:
+            for stmt in statements:
+                try:
+                    connection.execute(text(stmt))
+                    print(f"[SCHEMA] Success: {stmt[:50]}...")
+                except Exception as e:
+                    print(f"[SCHEMA] Skip/Error: {e}")
 
     if 'cuentas' in tables:
         cuenta_columns = {col['name'] for col in inspector.get_columns('cuentas')}
@@ -445,6 +486,13 @@ def subir_firma_procesada():
         original_mode = img.mode
         print(f"[FIRMA_UPLOAD] Original image mode: {original_mode}, size: {img.size}")
         
+        max_width = 400
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+            print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
+        
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
@@ -467,7 +515,9 @@ def subir_firma_procesada():
         print(f"[FIRMA_UPLOAD] Processed {pixels_changed} pixels to transparent")
         
         output = io.BytesIO()
-        img.save(output, format='PNG')
+        img.save(output, format='PNG', optimize=True)
+        output.seek(0)
+        
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
         print(f"[FIRMA_UPLOAD] Base64 length: {len(base64_result)}, prefix: {base64_result[:30]}...")
