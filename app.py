@@ -487,7 +487,7 @@ def subir_firma_procesada():
         original_mode = img.mode
         print(f"[FIRMA_UPLOAD] Original image mode: {original_mode}, size: {img.size}")
         
-        max_width = 400
+        max_width = 350
         if img.width > max_width:
             ratio = max_width / img.width
             new_height = int(img.height * ratio)
@@ -499,21 +499,13 @@ def subir_firma_procesada():
         
         pixels = img.load()
         width, height = img.size
-        pixels_changed = 0
         
         for y in range(height):
             for x in range(width):
                 r, g, b, a = pixels[x, y]
                 brightness = (r + g + b) / 3
-                if brightness > 230:
+                if brightness > 200:
                     pixels[x, y] = (r, g, b, 0)
-                    pixels_changed += 1
-                elif brightness > 200 and a > 100:
-                    alpha = int((brightness - 200) / 30 * 255)
-                    pixels[x, y] = (r, g, b, min(alpha, a))
-                    pixels_changed += 1
-        
-        print(f"[FIRMA_UPLOAD] Processed {pixels_changed} pixels to transparent")
         
         output = io.BytesIO()
         img.save(output, format='PNG', optimize=True)
@@ -536,6 +528,22 @@ def subir_firma_procesada():
     except Exception as e:
         import traceback
         print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/perfil/firma/eliminar', methods=['POST'])
+@login_required
+def eliminar_firma_usuario():
+    try:
+        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        if firma:
+            db.session.delete(firma)
+            db.session.commit()
+            print(f"[FIRMA] Eliminada para usuario {current_user.id}")
+            return jsonify({'success': True, 'message': 'Firma eliminada'})
+        return jsonify({'success': False, 'error': 'No hay firma para eliminar'})
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/')
