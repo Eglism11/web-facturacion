@@ -487,7 +487,7 @@ def subir_firma_procesada():
         original_mode = img.mode
         print(f"[FIRMA_UPLOAD] Original image mode: {original_mode}, size: {img.size}")
         
-        max_width = 350
+        max_width = 400
         if img.width > max_width:
             ratio = max_width / img.width
             new_height = int(img.height * ratio)
@@ -503,9 +503,16 @@ def subir_firma_procesada():
         for y in range(height):
             for x in range(width):
                 r, g, b, a = pixels[x, y]
-                brightness = (r + g + b) / 3
-                if brightness > 200:
+                
+                r, g, b = int(r), int(g), int(b)
+                luminance = 0.299 * r + 0.587 * g + 0.114 * b
+                
+                if luminance > 240:
                     pixels[x, y] = (r, g, b, 0)
+                elif luminance > 220:
+                    pixels[x, y] = (r, g, b, int(a * 0.3))
+                elif luminance > 180:
+                    pixels[x, y] = (r, g, b, int(a * 0.6))
         
         output = io.BytesIO()
         img.save(output, format='PNG', optimize=True)
