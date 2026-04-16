@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Facturación{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('index') }}" class="text-sm text-gray-500 hover:text-gray-700">
+            ← Volver al inicio
+        </a>
+        <h2 class="mt-2 text-2xl font-bold text-gray-900">Mi Perfil</h2>
+        <p class="mt-1 text-sm text-gray-500">Configura tus datos para los documentos PDF</p>
+    </div>
+
+    <div class="bg-white shadow rounded-lg">
+        <form method="POST" class="p-6 space-y-6">
+            <div>
+                <label for="nombre_completo" class="block text-sm font-medium text-gray-700">
+                    Nombre Completo
+                </label>
+                <input type="text" name="nombre_completo" id="nombre_completo" value="{{ usuario.nombre_completo or '' }}"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="Juan Pérez">
+                <p class="mt-1 text-xs text-gray-500">Aparecerá en los PDF como "DEBE A"</p>
+            </div>
+
+            <div>
+                <label for="cedula" class="block text-sm font-medium text-gray-700">
+                    Cédula/C.E.
+                </label>
+                <input type="text" name="cedula" id="cedula" value="{{ usuario.cedula or '' }}"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="1234567890">
+                <p class="mt-1 text-xs text-gray-500">Tu número de identificación</p>
+            </div>
+
+            <div class="border-t border-gray-200 pt-4">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Datos Bancarios</h3>
+                
+                <div>
+                    <label for="banco" class="block text-sm font-medium text-gray-700">
+                        Banco
+                    </label>
+                    <input type="text" name="banco" id="banco" value="{{ usuario.banco or '' }}"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="Banco de Bogotá, Nequi, RappiPay, etc.">
+                </div>
+
+                <div class="mt-4">
+                    <label for="numero_cuenta" class="block text-sm font-medium text-gray-700">
+                        Número de Cuenta
+                    </label>
+                    <input type="text" name="numero_cuenta" id="numero_cuenta" value="{{ usuario.numero_cuenta or '' }}"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="Número de cuenta, Nequi, etc.">
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4 border-t">
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

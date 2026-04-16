@@ -42,6 +42,7 @@
             </label>
 
             <div class="hidden w-full basis-full flex-col border-t border-slate-700 py-2 peer-checked:flex md:flex md:w-auto md:basis-auto md:flex-row md:items-center md:gap-1 md:border-0 md:py-0">
+                {% if current_user.is_authenticated %}
                 <a href="{{ url_for('index') }}" class="block rounded-md px-3 py-3 text-sm font-medium hover:bg-slate-700 md:inline-block md:py-2">
                     <i class="fas fa-home mr-2 w-5 text-center text-emerald-400 md:mr-1 md:w-auto md:text-inherit"></i> Inicio
                 </a>
@@ -54,6 +55,13 @@
                 <a href="{{ url_for('gestionar_firmas') }}" class="block rounded-md px-3 py-3 text-sm font-medium hover:bg-slate-700 md:inline-block md:py-2">
                     <i class="fas fa-signature mr-2 w-5 text-center text-emerald-400 md:mr-1 md:w-auto md:text-inherit"></i> Mis Firmas
                 </a>
+                <a href="{{ url_for('perfil') }}" class="block rounded-md px-3 py-3 text-sm font-medium hover:bg-slate-700 md:inline-block md:py-2">
+                    <i class="fas fa-user mr-2 w-5 text-center text-emerald-400 md:mr-1 md:w-auto md:text-inherit"></i> Mi Perfil
+                </a>
+                <a href="{{ url_for('logout') }}" class="block rounded-md px-3 py-3 text-sm font-medium hover:bg-slate-700 md:inline-block md:py-2 text-red-400">
+                    <i class="fas fa-sign-out-alt mr-2 w-5 text-center md:mr-1 md:w-auto"></i> Salir
+                </a>
+                {% endif %}
             </div>
         </div>
     </nav>

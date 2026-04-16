@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from config import Config
-from models import db, Cliente, Cuenta, Firma
+from models import db, Cliente, Cuenta, Firma, Usuario
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import inspect, text
@@ -8,18 +9,56 @@ from werkzeug.utils import secure_filename
 import io
 import os
 import uuid
+from PIL import Image
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Usuario.query.get(int(user_id))
+
 SIGNATURE_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas')
+SIGNATURE_PROCESSED_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas_procesadas')
 ALLOWED_SIGNATURE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
 def allowed_signature_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_SIGNATURE_EXTENSIONS
+
+
+def process_signature_remove_background(input_path, output_path):
+    """Procesa imagen de firma: convierte fondo blanco/claro a transparente."""
+    try:
+        img = Image.open(input_path)
+        
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
+        
+        pixels = img.load()
+        width, height = img.size
+        
+        for y in range(height):
+            for x in range(width):
+                r, g, b, a = pixels[x, y]
+                brightness = (r + g + b) / 3
+                if brightness > 230:
+                    pixels[x, y] = (r, g, b, 0)
+                elif brightness > 200 and a > 100:
+                    alpha = int((brightness - 200) / 30 * 255)
+                    pixels[x, y] = (r, g, b, min(alpha, a))
+        
+        img.save(output_path, 'PNG')
+        return True
+    except Exception as e:
+        print(f"Error procesando firma: {e}")
+        return False
 
 
 def parse_monto_colombia(raw):
@@ -154,8 +193,63 @@ with app.app_context():
     db.create_all()
     ensure_schema_updates()
     os.makedirs(SIGNATURE_UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(SIGNATURE_PROCESSED_FOLDER, exist_ok=True)
+    
+    # Create admin user if not exists
+    admin_username = Config.ADMIN_USER
+    admin_password = Config.ADMIN_PASSWORD
+    admin = Usuario.query.filter_by(username=admin_username).first()
+    if not admin:
+        admin = Usuario(username=admin_username)
+        admin.set_password(admin_password)
+        db.session.add(admin)
+        db.session.commit()
+        print(f"Admin user created: {admin_username}")
+
+
+# Login Routes
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        user = Usuario.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Usuario o contraseña incorrectos', 'error')
+    
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def perfil():
+    if request.method == 'POST':
+        current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
+        current_user.cedula = request.form.get('cedula', '').strip()
+        current_user.banco = request.form.get('banco', '').strip()
+        current_user.numero_cuenta = request.form.get('numero_cuenta', '').strip()
+        db.session.commit()
+        flash('Perfil actualizado correctamente', 'success')
+        return redirect(url_for('perfil'))
+    
+    return render_template('perfil.html', usuario=current_user)
 
 @app.route('/')
+@login_required
 def index():
     """Dashboard with summary statistics"""
     total_clientes = Cliente.query.count()
@@ -180,6 +274,7 @@ def index():
 
 # Client Routes
 @app.route('/clientes')
+@login_required
 def listar_clientes():
     """List all clients"""
     page = request.args.get('page', 1, type=int)
@@ -196,6 +291,7 @@ def listar_clientes():
     return render_template('clientes/list.html', clientes=clientes, search=search)
 
 @app.route('/clientes/nuevo', methods=['GET', 'POST'])
+@login_required
 def crear_cliente():
     """Create new client"""
     if request.method == 'POST':
@@ -213,6 +309,7 @@ def crear_cliente():
     return render_template('clientes/create.html')
 
 @app.route('/clientes/<int:id>')
+@login_required
 def ver_cliente(id):
     """View client details"""
     cliente = Cliente.query.get_or_404(id)
@@ -220,6 +317,7 @@ def ver_cliente(id):
     return render_template('clientes/detail.html', cliente=cliente, cuentas=cuentas)
 
 @app.route('/clientes/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
 def editar_cliente(id):
     """Edit client"""
     cliente = Cliente.query.get_or_404(id)
@@ -236,6 +334,7 @@ def editar_cliente(id):
     return render_template('clientes/edit.html', cliente=cliente)
 
 @app.route('/clientes/<int:id>/eliminar', methods=['POST'])
+@login_required
 def eliminar_cliente(id):
     """Delete client"""
     cliente = Cliente.query.get_or_404(id)
@@ -246,6 +345,7 @@ def eliminar_cliente(id):
 
 # Account Routes
 @app.route('/cuentas')
+@login_required
 def listar_cuentas():
     """List all accounts"""
     page = request.args.get('page', 1, type=int)
@@ -262,6 +362,7 @@ def listar_cuentas():
     return render_template('cuentas/list.html', cuentas=cuentas, estado=estado)
 
 @app.route('/cuentas/nueva', methods=['GET', 'POST'])
+@login_required
 def crear_cuenta():
     """Create new account"""
     clientes = Cliente.query.order_by(Cliente.nombre).all()
@@ -318,12 +419,14 @@ def crear_cuenta():
     return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat())
 
 @app.route('/cuentas/<int:id>')
+@login_required
 def ver_cuenta(id):
     """View account details"""
     cuenta = Cuenta.query.get_or_404(id)
     return render_template('cuentas/detail.html', cuenta=cuenta)
 
 @app.route('/cuentas/<int:id>/pagar', methods=['POST'])
+@login_required
 def marcar_pagada(id):
     """Mark account as paid"""
     cuenta = Cuenta.query.get_or_404(id)
@@ -333,6 +436,7 @@ def marcar_pagada(id):
     return redirect(url_for('ver_cuenta', id=id))
 
 @app.route('/cuentas/<int:id>/eliminar', methods=['POST'])
+@login_required
 def eliminar_cuenta(id):
     """Delete account"""
     cuenta = Cuenta.query.get_or_404(id)
@@ -343,6 +447,7 @@ def eliminar_cuenta(id):
 
 
 @app.route('/firmas', methods=['GET', 'POST'])
+@login_required
 def gestionar_firmas():
     """Upload and manage signatures"""
     if request.method == 'POST':
@@ -366,6 +471,10 @@ def gestionar_firmas():
         save_path = os.path.join(SIGNATURE_UPLOAD_FOLDER, filename)
         archivo.save(save_path)
 
+        processed_filename = os.path.splitext(filename)[0] + '.png'
+        processed_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
+        process_signature_remove_background(save_path, processed_path)
+
         firma = Firma(nombre=nombre, archivo=filename)
         db.session.add(firma)
         db.session.commit()
@@ -377,6 +486,7 @@ def gestionar_firmas():
 
 
 @app.route('/firmas/<int:id>/eliminar', methods=['POST'])
+@login_required
 def eliminar_firma(id):
     firma = Firma.query.get_or_404(id)
     in_use = Cuenta.query.filter_by(firma_id=id).first()
@@ -394,6 +504,7 @@ def eliminar_firma(id):
     return redirect(url_for('gestionar_firmas'))
 
 @app.route('/cuentas/<int:id>/pdf')
+@login_required
 def descargar_pdf(id):
     """Generate and download equivalent invoice PDF"""
     from fpdf import FPDF
@@ -423,13 +534,15 @@ def descargar_pdf(id):
     pdf.cell(0, 7, f"NIT/CC: {cliente.identificacion or 'No registrado'}", ln=True)
     pdf.ln(3)
 
-    prestador_nombre = (os.environ.get('PRESTADOR_NOMBRE') or '').strip()
-    prestador_doc = (os.environ.get('PRESTADOR_DOCUMENTO') or '').strip()
+    prestador_nombre = current_user.nombre_completo if current_user.is_authenticated else (os.environ.get('PRESTADOR_NOMBRE') or '').strip()
+    prestador_doc = current_user.cedula if current_user.is_authenticated else (os.environ.get('PRESTADOR_DOCUMENTO') or '').strip()
+    prestador_banco = current_user.banco if current_user.is_authenticated else ''
+    prestador_cuenta = current_user.numero_cuenta if current_user.is_authenticated else ''
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'DEBE A:', ln=True)
     pdf.set_font('Arial', '', 11)
-    pdf.cell(0, 7, f"Nombre completo: {prestador_nombre or '(Configure PRESTADOR_NOMBRE)'}", ln=True)
-    pdf.cell(0, 7, f"Cedula/CE: {prestador_doc or '(Configure PRESTADOR_DOCUMENTO)'}", ln=True)
+    pdf.cell(0, 7, f"Nombre completo: {prestador_nombre or '(Configure su perfil)'}", ln=True)
+    pdf.cell(0, 7, f"Cedula/CE: {prestador_doc or '(Configure su perfil)'}", ln=True)
     pdf.ln(3)
 
     pdf.set_font('Arial', 'B', 11)
@@ -458,9 +571,10 @@ def descargar_pdf(id):
     pdf.set_font('Arial', 'B', 11)
     pdf.cell(0, 7, 'Informacion de pago', ln=True)
     pdf.set_font('Arial', '', 11)
+    banco_info = f"{prestador_banco}" if prestador_banco else ""
     linea_pago = (
-        f"El pago debera efectuarse a: RappiPay No. {numero_pago or '—'} "
-        f"a nombre de {prestador_nombre or 'el prestador'}"
+        f"El pago debera efectuarse a: {numero_pago or '—'} "
+        f"({banco_info}) a nombre de {prestador_nombre or 'el prestador'}"
     )
     pdf.multi_cell(0, 7, linea_pago)
     pdf.ln(3)
@@ -476,11 +590,13 @@ def descargar_pdf(id):
     pdf.ln(18)
 
     sig_w_mm = 40
+    sig_h_mm = 30
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     if firma:
-        signature_path = os.path.join(SIGNATURE_UPLOAD_FOLDER, firma.archivo)
+        processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
+        signature_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
         if os.path.exists(signature_path):
-            pdf.image(signature_path, x=x_img, w=sig_w_mm)
+            pdf.image(signature_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
             pdf.ln(4)
         else:
             pdf.ln(10)
