@@ -989,23 +989,6 @@ def descargar_pdf(id):
     pdf.ln(2)
     pdf.set_font('Arial', '', 10)
     pdf.cell(0, 5, prestador_nombre or '', align='C', ln=True)
-            if os.path.exists(firma_path):
-                pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-                pdf.ln(3)
-            else:
-                print(f"[PDF] Signature file not found: {firma_path}")
-                pdf.ln(8)
-    else:
-        print("[PDF] No firma to display")
-        pdf.ln(8)
-
-    line_y = pdf.get_y()
-    line_w = 80
-    x_line = pdf.l_margin + (pdf.epw - line_w) / 2
-    pdf.line(x_line, line_y, x_line + line_w, line_y)
-    pdf.ln(2)
-    pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 6, prestador_nombre or '', align='C', ln=True)
 
     output = io.BytesIO(pdf.output(dest='S'))
 
