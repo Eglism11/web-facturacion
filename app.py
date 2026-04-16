@@ -254,7 +254,7 @@ def perfil():
     firma_actual = None
     firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
     if firma:
-        firma_actual = os.path.splitext(firma.archivo)[0] + '.png'
+        firma_actual = firma.archivo  # Base64 string directly
     
     return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
 
@@ -354,19 +354,20 @@ def guardar_firma_base64():
                 alpha = int((brightness - 200) / 30 * 255)
                 pixels[x, y] = (r, g, b, min(alpha, a))
     
-    filename = f"firma_usuario_{current_user.id}.png"
-    filepath = os.path.join(SIGNATURE_PROCESSED_FOLDER, filename)
-    img.save(filepath, 'PNG')
+    import io
+    output = io.BytesIO()
+    img.save(output, format='PNG')
+    base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
     
     firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
     if not firma:
-        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=filename)
+        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
         db.session.add(firma)
     else:
-        firma.archivo = filename
+        firma.archivo = base64_result
     db.session.commit()
     
-    return {'success': True, 'message': 'Firma guardada correctamente', 'filename': filename}
+    return {'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result}
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
@@ -383,12 +384,10 @@ def subir_firma_procesada():
     if ext not in ALLOWED_SIGNATURE_EXTENSIONS:
         return {'success': False, 'error': 'Formato no permitido'}
     
-    filename = f"firma_temp_{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(SIGNATURE_UPLOAD_FOLDER, filename)
-    file.save(filepath)
-    
     from PIL import Image
-    img = Image.open(filepath)
+    import io
+    
+    img = Image.open(file)
     if img.mode != 'RGBA':
         img = img.convert('RGBA')
     
@@ -405,21 +404,19 @@ def subir_firma_procesada():
                 alpha = int((brightness - 200) / 30 * 255)
                 pixels[x, y] = (r, g, b, min(alpha, a))
     
-    processed_filename = f"firma_usuario_{current_user.id}.png"
-    processed_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
-    img.save(processed_path, 'PNG')
-    
-    os.remove(filepath)
+    output = io.BytesIO()
+    img.save(output, format='PNG')
+    base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
     
     firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
     if not firma:
-        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=processed_filename)
+        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
         db.session.add(firma)
     else:
-        firma.archivo = processed_filename
+        firma.archivo = base64_result
     db.session.commit()
     
-    return {'success': True, 'message': 'Firma procesada correctamente', 'filename': processed_filename}
+    return {'success': True, 'message': 'Firma procesada correctamente', 'base64': base64_result}
 
 @app.route('/')
 @login_required
@@ -798,11 +795,25 @@ def descargar_pdf(id):
     sig_h_mm = 25
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     if firma:
-        processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
-        signature_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
-        if os.path.exists(signature_path):
-            pdf.image(signature_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
+        firma_path = None
+        if firma.archivo.startswith('data:'):
+            import tempfile
+            header, b64data = firma.archivo.split(',', 1)
+            img_data = base64.b64decode(b64data)
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+                tmp.write(img_data)
+                firma_path = tmp.name
+        else:
+            processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
+            firma_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
+        
+        if firma_path and os.path.exists(firma_path):
+            pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
             pdf.ln(3)
+            if not firma.archivo.startswith('data:'):
+                pass
+            else:
+                os.remove(firma_path)
         else:
             pdf.ln(8)
     else:

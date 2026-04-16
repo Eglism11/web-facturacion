@@ -112,7 +112,7 @@ class Firma(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(120), nullable=False)
-    archivo = db.Column(db.String(255), nullable=False)
+    archivo = db.Column(db.Text, nullable=False)  # Base64 string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     cuentas = db.relationship('Cuenta', backref='firma', lazy=True)

@@ -116,7 +116,7 @@
         
         <div id="firma-preview" class="mt-4 p-3 border rounded-lg {% if not firma_actual %}hidden{% endif %}">
             <p class="text-sm text-gray-500 mb-2">Firma actual:</p>
-            <img id="firma-img" src="{{ url_for('static', filename='uploads/firmas_procesadas/' + firma_actual) if firma_actual else '' }}" alt="Firma actual" class="h-20 object-contain">
+            <img id="firma-img" src="{{ firma_actual if firma_actual else '' }}" alt="Firma actual" class="h-20 object-contain">
         </div>
         {% if not firma_actual %}
         <div id="firma-placeholder" class="mt-4 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(data.message || 'Firma guardada correctamente');
                 document.getElementById('firma-preview').classList.remove('hidden');
                 document.getElementById('firma-placeholder')?.classList.add('hidden');
-                document.getElementById('firma-img').src = '{{ url_for("static", filename="uploads/firmas_procesadas/") }}' + data.filename;
+                document.getElementById('firma-img').src = data.base64 || data.filename;
                 location.reload();
             } else {
                 alert('Error: ' + (data.error || 'Error desconocido'));
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(data.message || 'Firma procesada correctamente');
                 document.getElementById('firma-preview').classList.remove('hidden');
                 document.getElementById('firma-placeholder')?.classList.add('hidden');
-                document.getElementById('firma-img').src = '{{ url_for("static", filename="uploads/firmas_procesadas/") }}' + data.filename;
+                document.getElementById('firma-img').src = data.base64 || data.filename;
                 location.reload();
             } else {
                 alert('Error: ' + (data.error || 'Error desconocido'));
