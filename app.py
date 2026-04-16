@@ -267,16 +267,25 @@ with app.app_context():
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required
 def perfil():
-    print(f"[PERFIL] Request method: {request.method}, user_id: {current_user.id}")
+    print(f"[PERFIL] Request method: {request.method}, user_id={current_user.id}, username={current_user.username}")
+    print(f"[PERFIL] Current nombre_completo BEFORE: '{current_user.nombre_completo}'")
+    print(f"[PERFIL] Current cedula BEFORE: '{current_user.cedula}'")
     try:
         if request.method == 'POST':
             nombre = request.form.get('nombre_completo', '').strip()
             cedula = request.form.get('cedula', '').strip()
-            print(f"[PERFIL] Guardando: nombre={nombre}, cedula={cedula}, usuario_id={current_user.id}")
+            print(f"[PERFIL] Form received: nombre='{nombre}', cedula='{cedula}'")
+            
             current_user.nombre_completo = nombre
             current_user.cedula = cedula
+            
             db.session.commit()
-            print(f"[PERFIL] Guardado exitosamente")
+            print(f"[PERFIL] Committed, nombre_completo NOW: '{current_user.nombre_completo}'")
+            
+            # Refresh to verify
+            db.session.refresh(current_user)
+            print(f"[PERFIL] After refresh: nombre_completo='{current_user.nombre_completo}', cedula='{current_user.cedula}'")
+            
             flash('Perfil actualizado correctamente', 'success')
             return redirect(url_for('perfil'))
         
@@ -285,8 +294,10 @@ def perfil():
         firma_actual = None
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if firma:
-            firma_actual = firma.archivo  # Base64 string directly
+            firma_actual = firma.archivo
+            print(f"[PERFIL] Firma found: {firma.id}, length={len(firma.archivo)}")
         
+        print(f"[PERFIL] Rendering template with usuario.nombre_completo='{current_user.nombre_completo}'")
         return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
     except Exception as e:
         import traceback
@@ -356,11 +367,11 @@ def eliminar_cuenta_bancaria(id):
 @login_required
 def guardar_firma_base64():
     import base64
-    import re
+    import io
     
     data = request.get_json()
     if not data or not data.get('firma'):
-        return {'success': False, 'error': 'No se recibió imagen'}
+        return jsonify({'success': False, 'error': 'No se recibió imagen'}), 400
     
     firma_data = data['firma']
     header, b64data = firma_data.split(',', 1)
@@ -372,7 +383,6 @@ def guardar_firma_base64():
         return jsonify({'success': False, 'error': str(e)}), 400
     
     from PIL import Image
-    import io
     
     img = Image.open(io.BytesIO(img_data))
     if img.mode != 'RGBA':
@@ -401,6 +411,15 @@ def guardar_firma_base64():
             firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
             db.session.add(firma)
         else:
+            firma.archivo = base64_result
+        db.session.commit()
+        
+        print(f"[FIRMA] Guardada: usuario={current_user.id}, firma_id={firma.id}, length={len(base64_result)}, prefix={base64_result[:30]}...")
+        return jsonify({'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result})
+    except Exception as e:
+        db.session.rollback()
+        print(f"[FIRMA] Error guardando: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
             firma.archivo = base64_result
         db.session.commit()
         print(f"[FIRMA] Guardada exitosamente para usuario {current_user.id}, id={firma.id}")
@@ -764,10 +783,25 @@ def descargar_pdf(id):
     cuenta = Cuenta.query.get_or_404(id)
     cliente = cuenta.cliente
     firma = cuenta.firma
-
-    print(f"[PDF] Cliente: {cliente.nombre}, Firma: {firma}")
+    
+    # Debug: Show firma details
+    print(f"[PDF] Cuenta: {cuenta.numero_factura}, cliente: {cliente.nombre}")
+    print(f"[PDF] Cuenta.firma_id: {cuenta.firma_id}")
+    print(f"[PDF] Firma from cuenta.firma: {firma}")
+    
+    # If no firma on account, try to get user's default firma
+    if not firma:
+        firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        if firma_usuario:
+            firma = firma_usuario
+            print(f"[PDF] Using user's default firma: id={firma.id}")
+        else:
+            print(f"[PDF] No firma found for account or user")
+    
     if firma:
-        print(f"[PDF] Firma archivo type: {type(firma.archivo)}, starts_with_data: {firma.archivo[:20] if firma.archivo else 'empty'}")
+        print(f"[PDF] Firma found: id={firma.id}, archivo type={type(firma.archivo)}, starts_with='{firma.archivo[:30] if firma.archivo else 'empty'}'")
+    else:
+        print(f"[PDF] No firma to display")
 
     pdf = FPDF()
     pdf.add_page()
