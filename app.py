@@ -482,45 +482,35 @@ def subir_firma_procesada():
     if ext not in ALLOWED_SIGNATURE_EXTENSIONS:
         return jsonify({'success': False, 'error': 'Formato no permitido'})
     
-    try:
+try:
         img = Image.open(file)
         original_mode = img.mode
-        print(f"[FIRMA_UPLOAD] Original image mode: {original_mode}, size: {img.size}")
+        print(f"[FIRMA_UPLOAD] Original image: {original_mode}, size: {img.size}")
         
-        max_width = 400
+        max_width = 350
         if img.width > max_width:
             ratio = max_width / img.width
             new_height = int(img.height * ratio)
             img = img.resize((max_width, new_height), Image.LANCZOS)
-            print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
         
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        pixels = img.load()
-        width, height = img.size
+        gray = img.convert('L')
         
-        for y in range(height):
-            for x in range(width):
-                r, g, b, a = pixels[x, y]
-                
-                r, g, b = int(r), int(g), int(b)
-                luminance = 0.299 * r + 0.587 * g + 0.114 * b
-                
-                if luminance > 240:
-                    pixels[x, y] = (r, g, b, 0)
-                elif luminance > 220:
-                    pixels[x, y] = (r, g, b, int(a * 0.3))
-                elif luminance > 180:
-                    pixels[x, y] = (r, g, b, int(a * 0.6))
+        threshold = 200
+        mask = gray.point(lambda x: 0 if x > threshold else 255, mode='1')
+        
+        result = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        result.paste(img, mask=mask)
         
         output = io.BytesIO()
-        img.save(output, format='PNG', optimize=True)
+        result.save(output, format='PNG')
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Base64 length: {len(base64_result)}, prefix: {base64_result[:30]}...")
+        print(f"[FIRMA_UPLOAD] Base64 length: {len(base64_result)}")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
