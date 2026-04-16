@@ -246,6 +246,7 @@ def perfil():
         current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
         current_user.cedula = request.form.get('cedula', '').strip()
         db.session.commit()
+        login_manager.reload_user()
         flash('Perfil actualizado correctamente', 'success')
         return redirect(url_for('perfil'))
     
