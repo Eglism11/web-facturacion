@@ -482,7 +482,7 @@ def subir_firma_procesada():
     if ext not in ALLOWED_SIGNATURE_EXTENSIONS:
         return jsonify({'success': False, 'error': 'Formato no permitido'})
     
-try:
+    try:
         img = Image.open(file)
         original_mode = img.mode
         print(f"[FIRMA_UPLOAD] Original image: {original_mode}, size: {img.size}")
