@@ -486,10 +486,39 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
+        # Check if already has alpha channel (PNG with transparency)
+        if img.mode == 'RGBA':
+            # Check how many transparent pixels it already has
+            pixels = list(img.getdata())
+            alpha_pixels = sum(1 for p in pixels if len(p) > 3 and p[3] < 255)
+            total_pixels = len(pixels)
+            alpha_ratio = alpha_pixels / total_pixels if total_pixels > 0 else 0
+            
+            print(f"[FIRMA_UPLOAD] Has alpha channel, {alpha_ratio*100:.1f}% transparent")
+            
+            if alpha_ratio > 0.1:
+                # Already has transparency, just resize
+                img = img.resize((250, 80), Image.LANCZOS)
+                output = io.BytesIO()
+                img.save(output, format='PNG')
+                output.seek(0)
+                base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
+                print(f"[FIRMA_UPLOAD] Already transparent, length: {len(base64_result)}")
+                
+                firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+                if not firma:
+                    firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
+                    db.session.add(firma)
+                else:
+                    firma.archivo = base64_result
+                db.session.commit()
+                return jsonify({'success': True, 'message': 'Firma guardada (ya transparente)', 'base64': base64_result})
+        
+        # For images without transparency, try threshold
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        img = img.resize((300, 100), Image.LANCZOS)
+        img = img.resize((250, 80), Image.LANCZOS)
         
         pixels = img.load()
         w, h = img.size
@@ -497,10 +526,8 @@ def subir_firma_procesada():
         for y in range(h):
             for x in range(w):
                 r, g, b, a = pixels[x, y]
-                if a < 50:
-                    continue
                 brightness = (r + g + b) / 3
-                if brightness > 150:
+                if brightness > 100:
                     pixels[x, y] = (r, g, b, 0)
         
         output = io.BytesIO()
@@ -509,7 +536,7 @@ def subir_firma_procesada():
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Base64 length: {len(base64_result)}")
+        print(f"[FIRMA_UPLOAD] Processed, length: {len(base64_result)}")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
