@@ -107,34 +107,22 @@
     <div class="bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Firma Digital</h3>
         
-        <div class="mb-4">
-            <canvas id="signature-pad" class="border border-gray-300 rounded-lg w-full" style="height: 200px;"></canvas>
+        {% if firma_actual %}
+        <div class="mb-4 p-3 border rounded-lg bg-emerald-50">
+            <p class="text-sm text-gray-600 mb-2">Firma registrada:</p>
+            <img src="{{ firma_actual }}" alt="Firma actual" class="h-24 object-contain border bg-white">
         </div>
-        <div class="flex gap-2 mb-4">
-            <button type="button" id="clear-signature" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
-                Limpiar
-            </button>
-            <button type="button" id="save-signature" class="px-3 py-1 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                Guardar Firma
-            </button>
-        </div>
-        <input type="hidden" name="firma_data" id="firma_data" value="">
-        
-        <div id="firma-preview" class="mt-4 p-3 border rounded-lg {% if not firma_actual %}hidden{% endif %}">
-            <p class="text-sm text-gray-500 mb-2">Firma actual:</p>
-            <img id="firma-img" src="{{ firma_actual if firma_actual else '' }}" alt="Firma actual" class="h-20 object-contain">
-        </div>
-        {% if not firma_actual %}
-        <div id="firma-placeholder" class="mt-4 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
+        {% else %}
+        <div class="mb-4 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
             <p class="text-sm text-gray-500">Sin firma registrada</p>
         </div>
         {% endif %}
         
         <div class="mt-4">
-            <p class="text-sm text-gray-500 mb-2">O sube una imagen (se eliminará el fondo automáticamente):</p>
+            <p class="text-sm text-gray-500 mb-2">Sube una imagen de tu firma (se eliminará el fondo automáticamente):</p>
             <input type="file" id="firma-imagen" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
-            <button type="button" id="upload-firma-btn" class="mt-2 px-4 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">
-                Subir Firma
+            <button type="button" id="upload-firma-btn" class="mt-3 px-4 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700">
+                {% if firma_actual %}Actualizar Firma{% else %}Subir Firma{% endif %}
             </button>
         </div>
     </div>
@@ -148,73 +136,12 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('signature-pad');
-    const signaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'rgba(255, 255, 255, 1)',
-        penColor: 'black'
-    });
-
-    function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext('2d').scale(ratio, ratio);
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    document.getElementById('clear-signature').addEventListener('click', function() {
-        signaturePad.clear();
-    });
-
-    // Botón guardar del canvas (dibujar firma)
-    document.getElementById('save-signature').addEventListener('click', function() {
-        if (signaturePad.isEmpty()) {
-            alert('Por favor dibuja tu firma primero');
-            return;
-        }
-        
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Guardando...';
-        
-        const dataUrl = signaturePad.toDataURL('image/png');
-        
-        fetch('{{ url_for("guardar_firma_base64") }}', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({firma: dataUrl})
-        })
-        .then(r => {
-            if (!r.ok) throw new Error('Error del servidor: ' + r.status);
-            return r.json();
-        })
-        .then(data => {
-            btn.disabled = false;
-            btn.textContent = 'Guardar Firma';
-            if (data.success) {
-                alert(data.message || 'Firma guardada correctamente');
-                location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.textContent = 'Guardar Firma';
-            console.error('Error:', err);
-            alert('Error de conexión: ' + err.message);
-        });
-    });
-
-    // Input de subir imagen
     const fileInput = document.getElementById('firma-imagen');
     const uploadBtn = document.getElementById('upload-firma-btn');
     
-    if (uploadBtn) {
+    if (uploadBtn && fileInput) {
         uploadBtn.addEventListener('click', function() {
             const file = fileInput.files[0];
             if (!file) {
@@ -223,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const btn = this;
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Procesando...';
             
@@ -233,32 +161,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData
             })
-            .then(r => {
-                if (!r.ok) throw new Error('Error del servidor: ' + r.status);
-                return r.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 btn.disabled = false;
-                btn.textContent = 'Subir Firma';
+                btn.textContent = originalText;
                 if (data.success) {
-                    alert(data.message || 'Firma procesada correctamente');
+                    alert('✅ ' + (data.message || 'Firma guardada correctamente'));
                     location.reload();
                 } else {
-                    alert('Error: ' + (data.error || 'Error desconocido'));
+                    alert('❌ Error: ' + (data.error || 'Error desconocido'));
                 }
             })
             .catch(err => {
                 btn.disabled = false;
-                btn.textContent = 'Subir Firma';
+                btn.textContent = originalText;
                 console.error('Error:', err);
-                alert('Error de conexión: ' + err.message);
+                alert('❌ Error de conexión: ' + err.message);
             });
         });
     }
-    
-    // Debug: mostrar si hay firma cargada
-    const firmaActual = '{{ firma_actual[:50] if firma_actual else "" }}';
-    console.log('[PERFIL] Firma actual cargada:', firmaActual ? 'Sí (' + firmaActual + '...)' : 'No');
 });
 </script>
 {% endblock %}
