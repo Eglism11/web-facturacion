@@ -212,11 +212,8 @@ with app.app_context():
         db.session.commit()
         print(f"Admin user created: {admin_username}")
     else:
-        # Update password if using legacy hash
-        if not admin.password_hash.startswith('pbkdf2:sha256'):
-            admin.set_password(admin_password)
-            db.session.commit()
-            print(f"Admin password migrated to Werkzeug hash")
+        # NEVER overwrite existing user data, just verify password works
+        print(f"Admin user already exists: {admin_username}, nombre: {admin.nombre_completo}")
 
 
 # Login Routes
