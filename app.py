@@ -486,49 +486,34 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Check if already has alpha channel (PNG with transparency)
-        if img.mode == 'RGBA':
-            # Check how many transparent pixels it already has
-            pixels = list(img.getdata())
-            alpha_pixels = sum(1 for p in pixels if len(p) > 3 and p[3] < 255)
-            total_pixels = len(pixels)
-            alpha_ratio = alpha_pixels / total_pixels if total_pixels > 0 else 0
-            
-            print(f"[FIRMA_UPLOAD] Has alpha channel, {alpha_ratio*100:.1f}% transparent")
-            
-            if alpha_ratio > 0.1:
-                # Already has transparency, just resize
-                img = img.resize((250, 80), Image.LANCZOS)
-                output = io.BytesIO()
-                img.save(output, format='PNG')
-                output.seek(0)
-                base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
-                print(f"[FIRMA_UPLOAD] Already transparent, length: {len(base64_result)}")
-                
-                firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
-                if not firma:
-                    firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
-                    db.session.add(firma)
-                else:
-                    firma.archivo = base64_result
-                db.session.commit()
-                return jsonify({'success': True, 'message': 'Firma guardada (ya transparente)', 'base64': base64_result})
+        procesar = request.form.get('procesar', '0') == '1'
         
-        # For images without transparency, try threshold
-        if img.mode != 'RGBA':
+        # Redimensionar primero
+        max_width = 400
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_height = int(img.height * ratio)
+            img = img.resize((max_width, new_height), Image.LANCZOS)
+            print(f"[FIRMA_UPLOAD] Resized to: {img.size}")
+        
+        if procesar:
+            # Procesar: quitar fondo blanco con threshold más alto (220)
+            if img.mode != 'RGBA':
+                img = img.convert('RGBA')
+            
+            pixels = img.load()
+            w, h = img.size
+            for y in range(h):
+                for x in range(w):
+                    r, g, b, a = pixels[x, y]
+                    brightness = (r + g + b) / 3
+                    if brightness > 220:
+                        pixels[x, y] = (r, g, b, 0)
+            
+            print(f"[FIRMA_UPLOAD] Processed with threshold 220")
+        elif img.mode != 'RGBA':
+            # Sin procesar, asegurar que sea PNG
             img = img.convert('RGBA')
-        
-        img = img.resize((250, 80), Image.LANCZOS)
-        
-        pixels = img.load()
-        w, h = img.size
-        
-        for y in range(h):
-            for x in range(w):
-                r, g, b, a = pixels[x, y]
-                brightness = (r + g + b) / 3
-                if brightness > 100:
-                    pixels[x, y] = (r, g, b, 0)
         
         output = io.BytesIO()
         img.save(output, format='PNG')
@@ -536,7 +521,7 @@ def subir_firma_procesada():
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Processed, length: {len(base64_result)}")
+        print(f"[FIRMA_UPLOAD] Length: {len(base64_result)}")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
@@ -547,7 +532,7 @@ def subir_firma_procesada():
         db.session.commit()
         
         print(f"[FIRMA_UPLOAD] Saved, firma_id={firma.id}")
-        return jsonify({'success': True, 'message': 'Firma procesada', 'base64': base64_result})
+        return jsonify({'success': True, 'message': 'Firma guardada', 'base64': base64_result})
     except Exception as e:
         import traceback
         print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
