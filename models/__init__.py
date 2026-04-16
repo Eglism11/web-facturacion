@@ -71,7 +71,7 @@ class Cuenta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     concepto = db.Column(db.Text, nullable=False)
-    monto = db.Column(db.Numeric(10, 2), nullable=False)
+    monto = db.Column(db.Numeric(15, 2), nullable=False)
     numero_factura = db.Column(db.String(50), unique=True)
     estado = db.Column(db.String(20), default='pendiente')
     pdf_url = db.Column(db.Text)
