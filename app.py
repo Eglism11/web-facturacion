@@ -11,8 +11,12 @@ import os
 import uuid
 from PIL import Image
 
+print("[STARTUP] Loading app.py...")
+
 app = Flask(__name__)
 app.config.from_object(Config)
+
+print("[STARTUP] Config loaded, initializing DB...")
 
 db.init_app(app)
 
@@ -704,11 +708,14 @@ def eliminar_firma(id):
 @login_required
 def descargar_pdf(id):
     """Generate and download equivalent invoice PDF"""
+    print(f"[PDF] Generating PDF for account {id}")
     from fpdf import FPDF
 
     cuenta = Cuenta.query.get_or_404(id)
     cliente = cuenta.cliente
     firma = cuenta.firma
+
+    print(f"[PDF] Cliente: {cliente.nombre}, Firma: {firma}")
 
     pdf = FPDF()
     pdf.add_page()
