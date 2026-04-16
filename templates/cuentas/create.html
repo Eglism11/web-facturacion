@@ -171,6 +171,22 @@
 
     display.addEventListener('input', formatMontoCO);
 
+    const cuentaSelect = document.getElementById('cuenta_bancaria_id');
+    const cuentaManual = document.getElementById('numero_cuenta_pago');
+    
+    if (cuentaSelect && cuentaManual) {
+        cuentaSelect.addEventListener('change', function() {
+            if (this.value) {
+                cuentaManual.value = '';
+            }
+        });
+        cuentaManual.addEventListener('input', function() {
+            if (this.value) {
+                cuentaSelect.value = '';
+            }
+        });
+    }
+
     form.addEventListener('submit', function () {
         const v = display.value.replace(/\./g, '').replace(',', '.');
         hidden.value = v;

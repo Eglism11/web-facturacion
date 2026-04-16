@@ -361,7 +361,7 @@ def guardar_firma_base64():
         firma.archivo = filename
     db.session.commit()
     
-    return {'success': True, 'message': 'Firma guardada correctamente'}
+    return {'success': True, 'message': 'Firma guardada correctamente', 'filename': filename}
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
@@ -414,7 +414,7 @@ def subir_firma_procesada():
         firma.archivo = processed_filename
     db.session.commit()
     
-    return {'success': True, 'message': 'Firma procesada correctamente'}
+    return {'success': True, 'message': 'Firma procesada correctamente', 'filename': processed_filename}
 
 @app.route('/')
 @login_required
