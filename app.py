@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from config import Config
-from models import db, Cliente, Cuenta, Firma, Usuario
+from models import db, Cliente, Cuenta, Firma, Usuario, CuentaBancaria
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import inspect, text
@@ -240,13 +240,181 @@ def perfil():
     if request.method == 'POST':
         current_user.nombre_completo = request.form.get('nombre_completo', '').strip()
         current_user.cedula = request.form.get('cedula', '').strip()
-        current_user.banco = request.form.get('banco', '').strip()
-        current_user.numero_cuenta = request.form.get('numero_cuenta', '').strip()
         db.session.commit()
         flash('Perfil actualizado correctamente', 'success')
         return redirect(url_for('perfil'))
     
-    return render_template('perfil.html', usuario=current_user)
+    cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).all()
+    
+    firma_actual = None
+    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+    if firma:
+        firma_actual = os.path.splitext(firma.archivo)[0] + '.png'
+    
+    return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
+
+
+@app.route('/perfil/cuenta-bancaria/agregar', methods=['POST'])
+@login_required
+def agregar_cuenta_bancaria():
+    nombre_banco = request.form.get('nombre_banco', '').strip()
+    tipo_cuenta = request.form.get('tipo_cuenta', '').strip()
+    numero_cuenta = request.form.get('numero_cuenta', '').strip()
+    
+    if not nombre_banco or not numero_cuenta:
+        flash('Todos los campos son requeridos', 'error')
+        return redirect(url_for('perfil'))
+    
+    cuenta = CuentaBancaria(
+        usuario_id=current_user.id,
+        nombre_banco=nombre_banco,
+        tipo_cuenta=tipo_cuenta,
+        numero_cuenta=numero_cuenta
+    )
+    
+    existing = CuentaBancaria.query.filter_by(usuario_id=current_user.id).count()
+    if existing == 0:
+        cuenta.es_principal = True
+    
+    db.session.add(cuenta)
+    db.session.commit()
+    flash('Cuenta bancaria agregada', 'success')
+    return redirect(url_for('perfil'))
+
+
+@app.route('/perfil/cuenta-bancaria/<int:id>/principal', methods=['POST'])
+@login_required
+def set_cuenta_principal(id):
+    cuenta = CuentaBancaria.query.get_or_404(id)
+    if cuenta.usuario_id != current_user.id:
+        flash('No autorizado', 'error')
+        return redirect(url_for('perfil'))
+    
+    CuentaBancaria.query.filter_by(usuario_id=current_user.id).update({'es_principal': False})
+    cuenta.es_principal = True
+    db.session.commit()
+    flash('Cuenta principal actualizada', 'success')
+    return redirect(url_for('perfil'))
+
+
+@app.route('/perfil/cuenta-bancaria/<int:id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_cuenta_bancaria(id):
+    cuenta = CuentaBancaria.query.get_or_404(id)
+    if cuenta.usuario_id != current_user.id:
+        flash('No autorizado', 'error')
+        return redirect(url_for('perfil'))
+    
+    db.session.delete(cuenta)
+    db.session.commit()
+    flash('Cuenta bancaria eliminada', 'success')
+    return redirect(url_for('perfil'))
+
+
+@app.route('/perfil/firma/base64', methods=['POST'])
+@login_required
+def guardar_firma_base64():
+    import base64
+    import re
+    
+    data = request.get_json()
+    if not data or not data.get('firma'):
+        return {'success': False, 'error': 'No se recibió imagen'}
+    
+    firma_data = data['firma']
+    header, b64data = firma_data.split(',', 1)
+    
+    try:
+        img_data = base64.b64decode(b64data)
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+    
+    from PIL import Image
+    import io
+    
+    img = Image.open(io.BytesIO(img_data))
+    if img.mode != 'RGBA':
+        img = img.convert('RGBA')
+    
+    pixels = img.load()
+    width, height = img.size
+    
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixels[x, y]
+            brightness = (r + g + b) / 3
+            if brightness > 230:
+                pixels[x, y] = (r, g, b, 0)
+            elif brightness > 200 and a > 100:
+                alpha = int((brightness - 200) / 30 * 255)
+                pixels[x, y] = (r, g, b, min(alpha, a))
+    
+    filename = f"firma_usuario_{current_user.id}.png"
+    filepath = os.path.join(SIGNATURE_PROCESSED_FOLDER, filename)
+    img.save(filepath, 'PNG')
+    
+    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+    if not firma:
+        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=filename)
+        db.session.add(firma)
+    else:
+        firma.archivo = filename
+    db.session.commit()
+    
+    return {'success': True}
+
+
+@app.route('/perfil/firma/upload', methods=['POST'])
+@login_required
+def subir_firma_procesada():
+    if 'imagen' not in request.files:
+        return {'success': False, 'error': 'No se recibió archivo'}
+    
+    file = request.files['imagen']
+    if not file.filename:
+        return {'success': False, 'error': 'No hay archivo'}
+    
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    if ext not in ALLOWED_SIGNATURE_EXTENSIONS:
+        return {'success': False, 'error': 'Formato no permitido'}
+    
+    filename = f"firma_temp_{uuid.uuid4().hex}.{ext}"
+    filepath = os.path.join(SIGNATURE_UPLOAD_FOLDER, filename)
+    file.save(filepath)
+    
+    from PIL import Image
+    img = Image.open(filepath)
+    if img.mode != 'RGBA':
+        img = img.convert('RGBA')
+    
+    pixels = img.load()
+    width, height = img.size
+    
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixels[x, y]
+            brightness = (r + g + b) / 3
+            if brightness > 230:
+                pixels[x, y] = (r, g, b, 0)
+            elif brightness > 200 and a > 100:
+                alpha = int((brightness - 200) / 30 * 255)
+                pixels[x, y] = (r, g, b, min(alpha, a))
+    
+    processed_filename = f"firma_usuario_{current_user.id}.png"
+    processed_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
+    img.save(processed_path, 'PNG')
+    
+    os.remove(filepath)
+    
+    firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+    if not firma:
+        firma = Firma(nombre=f"usuario_{current_user.id}", archivo=processed_filename)
+        db.session.add(firma)
+    else:
+        firma.archivo = processed_filename
+    db.session.commit()
+    
+    return {'success': True}
 
 @app.route('/')
 @login_required
@@ -367,10 +535,13 @@ def crear_cuenta():
     """Create new account"""
     clientes = Cliente.query.order_by(Cliente.nombre).all()
     firmas = Firma.query.order_by(Firma.nombre).all()
-
+    cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
+    
+    cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)
+    
     perfil = {
-        'banco': current_user.banco or '',
-        'numero_cuenta': current_user.numero_cuenta or ''
+        'banco': cuenta_principal.nombre_banco if cuenta_principal else '',
+        'numero_cuenta': cuenta_principal.numero_cuenta if cuenta_principal else ''
     }
 
     if request.method == 'POST':
@@ -386,21 +557,38 @@ def crear_cuenta():
                 firmas=firmas,
                 today=date.today().isoformat(),
                 perfil=perfil,
+                cuentas_bancarias=cuentas_bancarias,
             )
         fecha_documento = datetime.strptime(request.form['fecha_documento'], '%Y-%m-%d').date()
+        
         firma_id = request.form.get('firma_id') or None
-        numero_cuenta_pago = request.form.get('numero_cuenta_pago', '').strip()
+        if not firma_id:
+            firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+            if firma_usuario:
+                firma_id = firma_usuario.id
+        
+        cuenta_bancaria_id = request.form.get('cuenta_bancaria_id')
+        numero_cuenta_pago = ''
+        
+        if cuenta_bancaria_id:
+            cuenta_banc = CuentaBancaria.query.get(cuenta_bancaria_id)
+            if cuenta_banc and cuenta_banc.usuario_id == current_user.id:
+                numero_cuenta_pago = f"{cuenta_banc.numero_cuenta} ({cuenta_banc.nombre_banco} - {cuenta_banc.tipo_cuenta})"
+        
         if not numero_cuenta_pago:
-            flash('Indica el número de cuenta para pago (Nequi, RappiPay, cuenta bancaria, etc.).', 'error')
+            numero_cuenta_pago = request.form.get('numero_cuenta_pago', '').strip()
+        
+        if not numero_cuenta_pago:
+            flash('Selecciona una cuenta bancaria o escribe el número manualmente', 'error')
             return render_template(
                 'cuentas/create.html',
                 clientes=clientes,
                 firmas=firmas,
                 today=date.today().isoformat(),
                 perfil=perfil,
+                cuentas_bancarias=cuentas_bancarias,
             )
 
-        # Generate invoice number
         year = fecha_documento.year
         count = Cuenta.query.filter(
             db.extract('year', Cuenta.fecha_documento) == year
@@ -423,7 +611,7 @@ def crear_cuenta():
         flash(f'Cuenta de cobro {numero_factura} creada', 'success')
         return redirect(url_for('ver_cuenta', id=cuenta.id))
 
-    return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil)
+    return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil, cuentas_bancarias=cuentas_bancarias)
 
 @app.route('/cuentas/<int:id>')
 @login_required

@@ -18,6 +18,8 @@ class Usuario(UserMixin, db.Model):
     numero_cuenta = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    cuentas_bancarias = db.relationship('CuentaBancaria', backref='usuario', lazy=True, cascade='all, delete-orphan')
+
     def set_password(self, password):
         self.password_hash = hashlib.sha256(password.encode()).hexdigest()
 
@@ -88,6 +90,21 @@ class Cuenta(db.Model):
             'numero_cuenta_pago': self.numero_cuenta_pago,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+
+class CuentaBancaria(db.Model):
+    __tablename__ = 'cuentas_bancarias'
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    nombre_banco = db.Column(db.String(100), nullable=False)
+    tipo_cuenta = db.Column(db.String(20), nullable=False)  # Ahorros, Corriente
+    numero_cuenta = db.Column(db.String(100), nullable=False)
+    es_principal = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<CuentaBancaria {self.nombre_banco} - {self.numero_cuenta}>'
 
 
 class Firma(db.Model):
