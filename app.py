@@ -368,6 +368,11 @@ def crear_cuenta():
     clientes = Cliente.query.order_by(Cliente.nombre).all()
     firmas = Firma.query.order_by(Firma.nombre).all()
 
+    perfil = {
+        'banco': current_user.banco or '',
+        'numero_cuenta': current_user.numero_cuenta or ''
+    }
+
     if request.method == 'POST':
         cliente_id = request.form['cliente_id']
         concepto = request.form['concepto']
@@ -380,6 +385,7 @@ def crear_cuenta():
                 clientes=clientes,
                 firmas=firmas,
                 today=date.today().isoformat(),
+                perfil=perfil,
             )
         fecha_documento = datetime.strptime(request.form['fecha_documento'], '%Y-%m-%d').date()
         firma_id = request.form.get('firma_id') or None
@@ -391,6 +397,7 @@ def crear_cuenta():
                 clientes=clientes,
                 firmas=firmas,
                 today=date.today().isoformat(),
+                perfil=perfil,
             )
 
         # Generate invoice number
@@ -416,7 +423,7 @@ def crear_cuenta():
         flash(f'Cuenta de cobro {numero_factura} creada', 'success')
         return redirect(url_for('ver_cuenta', id=cuenta.id))
 
-    return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat())
+    return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil)
 
 @app.route('/cuentas/<int:id>')
 @login_required
@@ -513,7 +520,6 @@ def descargar_pdf(id):
     cliente = cuenta.cliente
     firma = cuenta.firma
 
-    # Create PDF
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=18)
@@ -525,83 +531,84 @@ def descargar_pdf(id):
     pdf.cell(0, 10, 'DOCUMENTO EQUIVALENTE A LA FACTURA', ln=True, align='C')
     pdf.set_font('Arial', '', 11)
     pdf.cell(0, 8, f"Consecutivo: {cuenta.numero_factura}", ln=True, align='R')
-    pdf.ln(4)
+    pdf.ln(6)
 
-    pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'Datos del cliente', ln=True)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 8, 'Datos del cliente', ln=True)
     pdf.set_font('Arial', '', 11)
     pdf.cell(0, 7, f"Nombre: {cliente.nombre}", ln=True)
     pdf.cell(0, 7, f"NIT/CC: {cliente.identificacion or 'No registrado'}", ln=True)
-    pdf.ln(3)
+    pdf.ln(5)
 
-    prestador_nombre = current_user.nombre_completo if current_user.is_authenticated else (os.environ.get('PRESTADOR_NOMBRE') or '').strip()
-    prestador_doc = current_user.cedula if current_user.is_authenticated else (os.environ.get('PRESTADOR_DOCUMENTO') or '').strip()
+    prestador_nombre = current_user.nombre_completo if current_user.is_authenticated else ''
+    prestador_doc = current_user.cedula if current_user.is_authenticated else ''
     prestador_banco = current_user.banco if current_user.is_authenticated else ''
-    prestador_cuenta = current_user.numero_cuenta if current_user.is_authenticated else ''
-    pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'DEBE A:', ln=True)
+    
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 8, 'DEBE A:', ln=True)
     pdf.set_font('Arial', '', 11)
     pdf.cell(0, 7, f"Nombre completo: {prestador_nombre or '(Configure su perfil)'}", ln=True)
     pdf.cell(0, 7, f"Cedula/CE: {prestador_doc or '(Configure su perfil)'}", ln=True)
-    pdf.ln(3)
+    pdf.ln(5)
 
-    pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'Por Concepto de:', ln=True)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 8, 'Por Concepto de:', ln=True)
     pdf.set_font('Arial', '', 11)
     pdf.multi_cell(0, 7, cuenta.concepto)
-    pdf.ln(2)
-
-    monto_texto = numero_a_letras(float(cuenta.monto)).upper()
-    pdf.multi_cell(0, 7, f"La suma de: {monto_texto} ({format_cop(cuenta.monto)})")
     pdf.ln(3)
 
+    monto_formatted = format_cop(cuenta.monto)
+    monto_texto = numero_a_letras(float(cuenta.monto)).upper()
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(140, 8, 'Actividad realizada', border=1, align='C')
-    pdf.cell(45, 8, 'Total', border=1, align='C', ln=True)
-    pdf.set_font('Arial', '', 11)
+    pdf.cell(0, 7, 'La suma de:', ln=True)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(0, 8, f"{monto_texto} ({monto_formatted})", ln=True)
+    pdf.ln(5)
+
+    pdf.set_font('Arial', 'B', 11)
+    pdf.cell(140, 10, 'Actividad realizada', border=1, align='C')
+    pdf.cell(45, 10, 'Total', border=1, align='C', ln=True)
+    pdf.set_font('Arial', '', 10)
     concept_x = pdf.get_x()
     concept_y = pdf.get_y()
-    pdf.multi_cell(140, 8, cuenta.concepto, border=1)
+    pdf.multi_cell(140, 10, cuenta.concepto, border=1)
     concept_end_y = pdf.get_y()
     pdf.set_xy(concept_x + 140, concept_y)
-    pdf.cell(45, concept_end_y - concept_y, format_cop(cuenta.monto), border=1, align='R')
-    pdf.ln(6)
+    pdf.cell(45, concept_end_y - concept_y, monto_formatted, border=1, align='R')
+    pdf.ln(10)
 
     numero_pago = (getattr(cuenta, 'numero_cuenta_pago', None) or '').strip()
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'Informacion de pago', ln=True)
+    pdf.cell(0, 8, 'Informacion de pago', ln=True)
     pdf.set_font('Arial', '', 11)
-    banco_info = f"{prestador_banco}" if prestador_banco else ""
-    linea_pago = (
-        f"El pago debera efectuarse a: {numero_pago or '—'} "
-        f"({banco_info}) a nombre de {prestador_nombre or 'el prestador'}"
-    )
+    banco_info = f"({prestador_banco})" if prestador_banco else ""
+    linea_pago = f"El pago debera efectuarse a: {numero_pago or '—'} {banco_info} a nombre de {prestador_nombre or 'el prestador'}"
     pdf.multi_cell(0, 7, linea_pago)
-    pdf.ln(3)
+    pdf.ln(5)
 
     pdf.set_font('Arial', 'B', 11)
-    pdf.cell(0, 7, 'Informacion adicional', ln=True)
+    pdf.cell(0, 8, 'Informacion adicional', ln=True)
     pdf.set_font('Arial', '', 10)
     texto_tributario = os.environ.get(
         'TEXTO_TRIBUTARIO',
         'No responsable de IVA segun art. 437 del ET. Documento equivalente para soporte contable.'
     )
     pdf.multi_cell(0, 6, texto_tributario)
-    pdf.ln(18)
+    pdf.ln(15)
 
-    sig_w_mm = 40
-    sig_h_mm = 30
+    sig_w_mm = 50
+    sig_h_mm = 25
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     if firma:
         processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
         signature_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
         if os.path.exists(signature_path):
             pdf.image(signature_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-            pdf.ln(4)
+            pdf.ln(3)
         else:
-            pdf.ln(10)
+            pdf.ln(8)
     else:
-        pdf.ln(10)
+        pdf.ln(8)
 
     line_y = pdf.get_y()
     line_w = 80
@@ -611,7 +618,6 @@ def descargar_pdf(id):
     pdf.set_font('Arial', '', 10)
     pdf.cell(0, 6, prestador_nombre or '', align='C', ln=True)
 
-    # Output
     output = io.BytesIO(pdf.output(dest='S'))
 
     filename = f"{cuenta.numero_factura}-{cliente.nombre.replace(' ', '_')}.pdf"
