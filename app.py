@@ -222,12 +222,19 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         
+        print(f"[LOGIN] Attempting login for user: {username}")
         user = Usuario.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('index'))
+        if user:
+            print(f"[LOGIN] User found, checking password...")
+            if user.check_password(password):
+                print(f"[LOGIN] Password OK, logging in")
+                login_user(user)
+                return redirect(url_for('index'))
+            else:
+                print(f"[LOGIN] Password failed")
         else:
-            flash('Usuario o contraseña incorrectos', 'error')
+            print(f"[LOGIN] User not found")
+        flash('Usuario o contraseña incorrectos', 'error')
     
     return render_template('login.html')
 

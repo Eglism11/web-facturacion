@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 
 db = SQLAlchemy()
@@ -11,7 +12,7 @@ class Usuario(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
     nombre_completo = db.Column(db.String(255))
     cedula = db.Column(db.String(50))
     banco = db.Column(db.String(100))
@@ -21,10 +22,16 @@ class Usuario(UserMixin, db.Model):
     cuentas_bancarias = db.relationship('CuentaBancaria', backref='usuario', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
-        self.password_hash = hashlib.sha256(password.encode()).hexdigest()
+        self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
-        return self.password_hash == hashlib.sha256(password.encode()).hexdigest()
+        if check_password_hash(self.password_hash, password):
+            return True
+        legacy_hash = hashlib.sha256(password.encode()).hexdigest()
+        if self.password_hash == legacy_hash:
+            self.password_hash = generate_password_hash(password)
+            return True
+        return False
 
     def __repr__(self):
         return f'<Usuario {self.username}>'
