@@ -486,20 +486,26 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Simple resize only - NO processing
+        # Convert to grayscale for cleaner result
+        gray = img.convert('L')
+        
+        # Resize maintaining aspect ratio
         max_width = 400
-        if img.width > max_width:
-            ratio = max_width / img.width
-            new_height = int(img.height * ratio)
-            img = img.resize((max_width, new_height), Image.LANCZOS)
+        if gray.width > max_width:
+            ratio = max_width / gray.width
+            new_height = int(gray.height * ratio)
+            gray = gray.resize((max_width, new_height), Image.LANCZOS)
+        
+        # Convert back to RGB for PNG
+        result = gray.convert('RGB')
         
         output = io.BytesIO()
-        img.save(output, format='PNG')
+        result.save(output, format='PNG')
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Simple resize only, saved: {len(base64_result)} chars")
+        print(f"[FIRMA_UPLOAD] Grayscale resize, saved: {len(base64_result)} chars")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
@@ -931,10 +937,10 @@ def descargar_pdf(id):
         'No responsable de IVA segun art. 437 del ET. Documento equivalente para soporte contable.'
     )
     pdf.multi_cell(0, 6, texto_tributario)
-    pdf.ln(15)
+    pdf.ln(10)
 
-    sig_w_mm = 60
-    sig_h_mm = 20
+    sig_w_mm = 50
+    sig_h_mm = 15
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     
     print(f"[PDF] Adding signature, firma={firma}")
@@ -946,7 +952,6 @@ def descargar_pdf(id):
                 header, b64data = firma.archivo.split(',', 1)
                 img_data = base64.b64decode(b64data)
                 
-                # Save to temp file with proper extension
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
                     tmp.write(img_data)
                     firma_path = tmp.name
@@ -955,18 +960,35 @@ def descargar_pdf(id):
                 
                 if os.path.exists(firma_path) and os.path.getsize(firma_path) > 0:
                     pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-                    pdf.ln(3)
+                    pdf.ln(2)
                     os.remove(firma_path)
                     print("[PDF] Signature added successfully")
                 else:
                     print("[PDF] Temp file invalid or empty")
-                    pdf.ln(8)
+                    pdf.ln(5)
             except Exception as pdf_err:
                 print(f"[PDF] Error adding signature: {pdf_err}")
-                pdf.ln(8)
+                pdf.ln(5)
         else:
             processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
             firma_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
+            if os.path.exists(firma_path):
+                pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
+                pdf.ln(2)
+            else:
+                print(f"[PDF] Signature file not found: {firma_path}")
+                pdf.ln(5)
+    else:
+        print("[PDF] No firma to display")
+        pdf.ln(5)
+
+    line_y = pdf.get_y()
+    line_w = 70
+    x_line = pdf.l_margin + (pdf.epw - line_w) / 2
+    pdf.line(x_line, line_y, x_line + line_w, line_y)
+    pdf.ln(2)
+    pdf.set_font('Arial', '', 10)
+    pdf.cell(0, 5, prestador_nombre or '', align='C', ln=True)
             if os.path.exists(firma_path):
                 pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
                 pdf.ln(3)
