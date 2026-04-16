@@ -490,8 +490,8 @@ def subir_firma_procesada():
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
         
-        # Resize first to speed up processing
-        max_width = 500
+        # Resize first
+        max_width = 400
         if img.width > max_width:
             ratio = max_width / img.width
             new_height = int(img.height * ratio)
@@ -504,18 +504,27 @@ def subir_firma_procesada():
         result = Image.new('RGBA', (w, h), (0, 0, 0, 0))
         result_pixels = result.load()
         
-        # Only keep truly dark pixels (signature strokes)
+        # Count pixels
+        kept = 0
+        removed = 0
+        
+        # Very aggressive: only keep very dark pixels
         for y in range(h):
             for x in range(w):
                 r, g, b, a = pixels[x, y]
-                brightness = (r + g + b) / 3
-                # Keep only dark pixels (brightness < 200)
-                if brightness < 200:
-                    # Keep this pixel as part of signature
-                    result_pixels[x, y] = (r, g, b, 255)
+                # Only keep very dark pixels (signature ink)
+                # Pure white = 255,255,255 (brightness 255)
+                # Dark signature = ~50-100 brightness
+                if r < 80 and g < 80 and b < 80:
+                    result_pixels[x, y] = (0, 0, 0, 255)  # Force black
+                    kept += 1
+                else:
+                    removed += 1
+        
+        print(f"[FIRMA_UPLOAD] Pixels kept: {kept}, removed: {removed}")
         
         # Resize to final size
-        result = result.resize((400, 80), Image.LANCZOS)
+        result = result.resize((350, 70), Image.LANCZOS)
         
         output = io.BytesIO()
         result.save(output, format='PNG')
