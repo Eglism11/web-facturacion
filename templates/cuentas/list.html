@@ -3,102 +3,123 @@
 {% block title %}Cuentas de Cobro - Facturación{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="flex-1 min-w-0">
-            <h2 class="text-2xl font-bold text-gray-900">Cuentas de Cobro</h2>
-            <p class="mt-1 text-sm text-gray-500">Gestiona todas tus cuentas y facturas</p>
+<div class="space-y-8 fade-in">
+    <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        <div class="slide-up">
+            <div class="flex items-center space-x-3 mb-2">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <i class="fas fa-file-invoice text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Cuentas de Cobro</h1>
+                    <p class="text-slate-500 font-medium">Gestiona todas tus facturas y cuentas</p>
+                </div>
+            </div>
         </div>
-        <div class="mt-4 flex md:mt-0">
-            <a href="{{ url_for('crear_cuenta') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
+        
+        <div class="slide-up stagger-1">
+            <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-lg">
                 <i class="fas fa-plus mr-2"></i>Nueva Cuenta
             </a>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white shadow rounded-lg p-4">
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ url_for('listar_cuentas') }}" class="px-3 py-1 rounded-full text-sm font-medium {% if not estado %}bg-slate-800 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
-                Todas
-            </a>
-            <a href="{{ url_for('listar_cuentas', estado='pendiente') }}" class="px-3 py-1 rounded-full text-sm font-medium {% if estado == 'pendiente' %}bg-amber-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
-                Pendientes
-            </a>
-            <a href="{{ url_for('listar_cuentas', estado='pagado') }}" class="px-3 py-1 rounded-full text-sm font-medium {% if estado == 'pagado' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
-                Pagadas
-            </a>
-        </div>
+    <div class="flex flex-wrap gap-2 slide-up" style="animation-delay: 0.1s;">
+        <a href="{{ url_for('listar_cuentas') }}" 
+           class="px-4 py-2 rounded-xl text-sm font-semibold transition-all {% if not estado %}bg-slate-900 text-white shadow-lg{% else %}bg-white text-slate-600 border border-slate-200 hover:border-slate-300{% endif %}">
+            Todas
+        </a>
+        <a href="{{ url_for('listar_cuentas', estado='pendiente') }}" 
+           class="px-4 py-2 rounded-xl text-sm font-semibold transition-all {% if estado == 'pendiente' %}bg-amber-500 text-white shadow-lg{% else %}bg-white text-slate-600 border border-amber-200 hover:border-amber-300 hover:bg-amber-50{% endif %}">
+            <i class="fas fa-clock mr-1.5"></i>Pendientes
+        </a>
+        <a href="{{ url_for('listar_cuentas', estado='pagado') }}" 
+           class="px-4 py-2 rounded-xl text-sm font-semibold transition-all {% if estado == 'pagado' %}bg-emerald-500 text-white shadow-lg{% else %}bg-white text-slate-600 border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50{% endif %}">
+            <i class="fas fa-check-circle mr-1.5"></i>Pagadas
+        </a>
     </div>
 
-    <!-- Accounts List -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.2s;">
         {% if cuentas.items %}
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factura</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Concepto</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for cuenta in cuentas.items %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ cuenta.numero_factura }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="text-sm text-indigo-600 hover:text-indigo-900">
-                                    {{ cuenta.cliente.nombre }}
-                                </a>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ cuenta.concepto[:50] }}{% if cuenta.concepto|length > 50 %}...{% endif %}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-500">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                {% if cuenta.estado == 'pagado' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Pagado</span>
-                                {% else %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Pendiente</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-sm font-semibold text-gray-900">{{ cuenta.monto|format_cop_co }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Ver</a>
-                                <a href="{{ url_for('descargar_pdf', id=cuenta.id) }}" class="text-gray-600 hover:text-gray-900" title="Descargar PDF">
-                                    <i class="fas fa-file-pdf"></i>
-                                </a>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-slate-50/50 border-b border-slate-100">
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Factura</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Concepto</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Monto</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for cuenta in cuentas.items %}
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-lg {% if cuenta.estado == 'pagado' %}bg-emerald-100{% else %}bg-amber-100{% endif %} flex items-center justify-center">
+                                            {% if cuenta.estado == 'pagado' %}
+                                                <i class="fas fa-check-circle text-emerald-600"></i>
+                                            {% else %}
+                                                <i class="fas fa-clock text-amber-600"></i>
+                                            {% endif %}
+                                        </div>
+                                        <span class="font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="font-medium text-primary-600 hover:text-primary-700">
+                                        {{ cuenta.cliente.nombre }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-slate-600 max-w-xs truncate block">{{ cuenta.concepto[:45] }}{% if cuenta.concepto|length > 45 %}...{% endif %}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-slate-500">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    {% if cuenta.estado == 'pagado' %}
+                                        <span class="badge px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">Pagado</span>
+                                    {% else %}
+                                        <span class="badge px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <span class="text-base font-bold text-slate-900">{{ cuenta.monto|format_cop_co }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors" title="Ver">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('descargar_pdf', id=cuenta.id) }}" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Descargar PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-            <!-- Pagination -->
             {% if cuentas.pages > 1 %}
-                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                    <div class="flex-1 flex justify-between">
+                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="text-sm text-slate-500 font-medium">
+                        Página {{ cuentas.page }} de {{ cuentas.pages }}
+                    </div>
+                    <div class="flex items-center space-x-2">
                         {% if cuentas.has_prev %}
-                            <a href="{{ url_for('listar_cuentas', page=cuentas.prev_num, estado=estado) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                ← Anterior
+                            <a href="{{ url_for('listar_cuentas', page=cuentas.prev_num, estado=estado) }}" class="btn-secondary inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium">
+                                <i class="fas fa-chevron-left mr-2"></i>Anterior
                             </a>
                         {% endif %}
-                        <span class="text-sm text-gray-700">Página {{ cuentas.page }} de {{ cuentas.pages }}</span>
-
                         {% if cuentas.has_next %}
-                            <a href="{{ url_for('listar_cuentas', page=cuentas.next_num, estado=estado) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Siguiente →
+                            <a href="{{ url_for('listar_cuentas', page=cuentas.next_num, estado=estado) }}" class="btn-primary inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium text-white">
+                                Siguiente<i class="fas fa-chevron-right ml-2"></i>
                             </a>
                         {% endif %}
                     </div>
@@ -106,12 +127,19 @@
             {% endif %}
 
         {% else %}
-            <div class="px-4 py-8 text-center">
-                <i class="fas fa-file-invoice text-gray-300 text-4xl mb-3"></i>
-                <p class="text-gray-500 mb-4">No hay cuentas de cobro{% if estado %} con estado "{{ estado }}"{% endif %}</p>
-                <a href="{{ url_for('crear_cuenta') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700">
-                    Crear primera cuenta
-                </a>
+            <div class="px-6 py-16 text-center">
+                <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-invoice text-slate-300 text-3xl"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-slate-700 mb-2">No hay cuentas de cobro</h4>
+                <p class="text-sm text-slate-500 mb-6">
+                    {% if estado %}No hay cuentas con estado "{{ estado }}"{% else %}Comienza creando tu primera cuenta de cobro{% endif %}
+                </p>
+                {% if not estado %}
+                    <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                        <i class="fas fa-plus mr-2"></i>Crear cuenta
+                    </a>
+                {% endif %}
             </div>
         {% endif %}
     </div>

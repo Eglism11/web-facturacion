@@ -3,177 +3,172 @@
 {% block title %}Dashboard - Facturación{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <!-- Page Header -->
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="flex-1 min-w-0">
-            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                Dashboard
-            </h2>
-            <p class="mt-1 text-sm text-gray-500">Resumen de tu sistema de facturación</p>
+<div class="space-y-8 fade-in">
+    <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        <div class="slide-up">
+            <div class="flex items-center space-x-3 mb-2">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <i class="fas fa-chart-line text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+                    <p class="text-slate-500 font-medium">Resumen de tu actividad</p>
+                </div>
+            </div>
         </div>
-        <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-            <a href="{{ url_for('crear_cliente') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+        
+        <div class="flex flex-wrap gap-3 slide-up stagger-1">
+            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-lg">
+                <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
             </a>
-            <a href="{{ url_for('crear_cuenta') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                <i class="fas fa-file-invoice mr-2"></i>Nueva Cuenta
+            <a href="{{ url_for('crear_cuenta') }}" class="btn-secondary inline-flex items-center px-5 py-2.5 rounded-xl text-slate-700 font-semibold text-sm">
+                <i class="fas fa-file-invoice mr-2 text-primary-600"></i>Nueva Cuenta
             </a>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Total Clientes -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-md bg-indigo-500 p-3">
-                            <i class="fas fa-users text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Total Clientes</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">{{ total_clientes }}</dd>
-                        </dl>
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="stat-card rounded-2xl p-6 border border-slate-200/50 slide-up stagger-1">
+            <div class="flex items-start justify-between">
+                <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/30">
+                    <i class="fas fa-users text-white text-xl"></i>
                 </div>
+                <span class="badge px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold">
+                    Total
+                </span>
             </div>
-            <div class="bg-gray-50 px-5 py-3">
-                <div class="text-sm">
-                    <a href="{{ url_for('listar_clientes') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Ver todos</a>
-                </div>
+            <div class="mt-5">
+                <p class="text-3xl font-bold text-slate-900 tracking-tight">{{ total_clientes }}</p>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Clientes registrados</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <a href="{{ url_for('listar_clientes') }}" class="text-sm text-primary-600 font-semibold hover:text-primary-700 inline-flex items-center">
+                    Ver todos <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
             </div>
         </div>
 
-        <!-- Total Facturado -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-md bg-emerald-500 p-3">
-                            <i class="fas fa-dollar-sign text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Total Facturado</dt>
-                            <dd class="text-2xl font-semibold text-gray-900">{{ total_facturado|format_cop_co }}</dd>
-                        </dl>
-                    </div>
+        <div class="stat-card rounded-2xl p-6 border border-slate-200/50 slide-up stagger-2">
+            <div class="flex items-start justify-between">
+                <div class="p-3 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30">
+                    <i class="fas fa-dollar-sign text-white text-xl"></i>
                 </div>
+                <span class="badge px-2.5 py-1 rounded-full bg-primary-50 text-primary-600 text-xs font-semibold">
+                    Ingresos
+                </span>
             </div>
-            <div class="bg-gray-50 px-5 py-3">
-                <div class="text-sm text-gray-500">{{ total_cuentas }} cuentas generadas</div>
+            <div class="mt-5">
+                <p class="text-2xl font-bold text-slate-900 tracking-tight">{{ total_facturado|format_cop_co }}</p>
+                <p class="text-sm text-slate-500 mt-1 font-medium">{{ total_cuentas }} cuentas generadas</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <a href="{{ url_for('listar_cuentas') }}" class="text-sm text-primary-600 font-semibold hover:text-primary-700 inline-flex items-center">
+                    Ver detalles <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
             </div>
         </div>
 
-        <!-- Pendiente -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-md bg-amber-500 p-3">
-                            <i class="fas fa-clock text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Pendiente de Pago</dt>
-                            <dd class="text-2xl font-semibold text-amber-600">{{ total_pendiente|format_cop_co }}</dd>
-                        </dl>
-                    </div>
+        <div class="stat-card rounded-2xl p-6 border border-slate-200/50 slide-up stagger-3">
+            <div class="flex items-start justify-between">
+                <div class="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30">
+                    <i class="fas fa-clock text-white text-xl"></i>
                 </div>
+                <span class="badge px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">
+                    Pendiente
+                </span>
             </div>
-            <div class="bg-gray-50 px-5 py-3">
-                <div class="text-sm">
-                    <a href="{{ url_for('listar_cuentas', estado='pendiente') }}" class="font-medium text-amber-600 hover:text-amber-500">Ver pendientes</a>
-                </div>
+            <div class="mt-5">
+                <p class="text-2xl font-bold text-amber-600 tracking-tight">{{ total_pendiente|format_cop_co }}</p>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Por cobrar</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <a href="{{ url_for('listar_cuentas', estado='pendiente') }}" class="text-sm text-amber-600 font-semibold hover:text-amber-700 inline-flex items-center">
+                    Ver pendientes <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
             </div>
         </div>
 
-        <!-- Pagado -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-md bg-green-500 p-3">
-                            <i class="fas fa-check-circle text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Pagado</dt>
-                            <dd class="text-2xl font-semibold text-green-600">{{ total_pagado|format_cop_co }}</dd>
-                        </dl>
-                    </div>
+        <div class="stat-card rounded-2xl p-6 border border-slate-200/50 slide-up stagger-4">
+            <div class="flex items-start justify-between">
+                <div class="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 shadow-lg shadow-emerald-500/30">
+                    <i class="fas fa-check-circle text-white text-xl"></i>
                 </div>
+                <span class="badge px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold">
+                    Cobrado
+                </span>
             </div>
-            <div class="bg-gray-50 px-5 py-3">
-                <div class="text-sm">
-                    <a href="{{ url_for('listar_cuentas', estado='pagado') }}" class="font-medium text-green-600 hover:text-green-500">Ver pagadas</a>
-                </div>
+            <div class="mt-5">
+                <p class="text-2xl font-bold text-emerald-600 tracking-tight">{{ total_pagado|format_cop_co }}</p>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Total cobrado</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <a href="{{ url_for('listar_cuentas', estado='pagado') }}" class="text-sm text-emerald-600 font-semibold hover:text-emerald-700 inline-flex items-center">
+                    Ver cobradas <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Recent Accounts -->
-    <div class="bg-white shadow rounded-lg">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Cuentas Recientes</h3>
+    <div class="glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.5s;">
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-primary-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Cuentas Recientes</h3>
+                    <p class="text-sm text-slate-500">Últimas cuentas de cobro creadas</p>
+                </div>
+            </div>
+            <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center">
+                Ver todas <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
 
         {% if cuentas_recientes %}
-            <div class="divide-y divide-gray-200">
+            <div class="divide-y divide-slate-100">
                 {% for cuenta in cuentas_recientes %}
-                    <div class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition">
+                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="table-row block px-6 py-4 hover:bg-slate-50/50 transition-colors">
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
                                     {% if cuenta.estado == 'pagado' %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Pagado
-                                        </span>
+                                        <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
                                     {% else %}
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                            Pendiente
-                                        </span>
+                                        <i class="fas fa-clock text-amber-500 text-lg"></i>
                                     {% endif %}
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ cuenta.numero_factura }}
-                                    </p>
-                                    <p class="text-sm text-gray-500">
-                                        {{ cuenta.cliente.nombre }} - {{ cuenta.concepto[:50] }}{% if cuenta.concepto|length > 50 %}...{% endif %}
+                                <div>
+                                    <div class="flex items-center space-x-3">
+                                        <span class="font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                                        {% if cuenta.estado == 'pagado' %}
+                                            <span class="badge px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-xs">Pagado</span>
+                                        {% else %}
+                                            <span class="badge px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-xs">Pendiente</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-sm text-slate-500 mt-0.5">
+                                        {{ cuenta.cliente.nombre }} · {{ cuenta.concepto[:45] }}{% if cuenta.concepto|length > 45 %}...{% endif %}
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <span class="text-lg font-semibold text-gray-900">
-                                    {{ cuenta.monto|format_cop_co }}
-                                </span>
-                                <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                                    Ver →
-                                </a>
+                            <div class="text-right">
+                                <span class="text-lg font-bold text-slate-900">{{ cuenta.monto|format_cop_co }}</span>
+                                <p class="text-xs text-slate-400 mt-1">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</p>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
-            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
-                <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    Ver todas las cuentas →
-                </a>
-            </div>
         {% else %}
-            <div class="px-4 py-8 text-center">
-                <i class="fas fa-file-invoice text-gray-300 text-4xl mb-3"></i>
-                <p class="text-gray-500 mb-4">No hay cuentas de cobro registradas</p>
-                <a href="{{ url_for('crear_cuenta') }}" class="text-indigo-600 font-medium hover:text-indigo-500">
-                    Crear primera cuenta →
+            <div class="px-6 py-16 text-center">
+                <div class="w-20 h-20 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-invoice text-slate-300 text-3xl"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-slate-700 mb-2">No hay cuentas de cobro</h4>
+                <p class="text-sm text-slate-500 mb-6">Comienza creando tu primera cuenta de cobro</p>
+                <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                    <i class="fas fa-plus mr-2"></i>Crear cuenta
                 </a>
             </div>
         {% endif %}

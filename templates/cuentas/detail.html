@@ -3,118 +3,140 @@
 {% block title %}{{ cuenta.numero_factura }} - Facturación{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <a href="{{ url_for('listar_cuentas') }}" class="text-sm text-gray-500 hover:text-gray-700">
-                ← Volver a cuentas
+<div class="max-w-4xl mx-auto space-y-8 fade-in">
+    <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+        <div class="slide-up">
+            <a href="{{ url_for('listar_cuentas') }}" class="inline-flex items-center text-sm text-slate-500 hover:text-primary-600 mb-3 font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a cuentas
             </a>
-            <h2 class="mt-2 text-2xl font-bold text-gray-900">{{ cuenta.numero_factura }}</h2>
+            <div class="flex items-center space-x-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <i class="fas fa-file-invoice text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ cuenta.numero_factura }}</h1>
+                    <p class="text-slate-500 font-medium">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</p>
+                </div>
+            </div>
         </div>
-        <div class="flex space-x-3">
-            <a href="{{ url_for('descargar_pdf', id=cuenta.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                <i class="fas fa-download mr-2"></i>Descargar PDF
+        
+        <div class="flex flex-wrap gap-3 slide-up stagger-1">
+            <a href="{{ url_for('descargar_pdf', id=cuenta.id) }}" class="btn-secondary inline-flex items-center px-5 py-2.5 rounded-xl text-slate-700 font-semibold text-sm">
+                <i class="fas fa-download mr-2 text-red-500"></i>Descargar PDF
             </a>
             {% if cuenta.estado == 'pendiente' %}
             <form method="POST" action="{{ url_for('marcar_pagada', id=cuenta.id) }}">
-                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-                    <i class="fas fa-check mr-2"></i>Marcar como Pagada
+                <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                    <i class="fas fa-check mr-2"></i>Marcar Pagada
                 </button>
             </form>
             {% endif %}
         </div>
     </div>
 
-    <!-- Invoice Card -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <!-- Status Banner -->
-        <div class="px-4 py-3 sm:px-6 {% if cuenta.estado == 'pagado' %}bg-green-50 border-b border-green-200{% else %}bg-amber-50 border-b border-amber-200{% endif %}">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    {% if cuenta.estado == 'pagado' %}
-                    <i class="fas fa-check-circle text-green-500 text-xl mr-2"></i>
-                    <span class="text-green-800 font-medium">Estado: Pagada</span>
-                    {% else %}
-                    <i class="fas fa-clock text-amber-500 text-xl mr-2"></i>
-                    <span class="text-amber-800 font-medium">Estado: Pendiente de Pago</span>
-                    {% endif %}
-                </div>
-                <span class="text-sm text-gray-500">Documento del {{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</span>
+    <div class="glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.1s;">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between {% if cuenta.estado == 'pagado' %}bg-gradient-to-r from-emerald-50 to-green-50{% else %}bg-gradient-to-r from-amber-50 to-orange-50{% endif %}">
+            <div class="flex items-center space-x-3">
+                {% if cuenta.estado == 'pagado' %}
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-emerald-600 text-lg"></i>
+                    </div>
+                    <span class="font-bold text-emerald-800">Estado: Pagada</span>
+                {% else %}
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i class="fas fa-clock text-amber-600 text-lg"></i>
+                    </div>
+                    <span class="font-bold text-amber-800">Estado: Pendiente de Pago</span>
+                {% endif %}
             </div>
+            <span class="text-sm text-slate-500 font-medium">{{ cuenta.fecha_documento.strftime('%d de %B del %Y') }}</span>
         </div>
 
         <div class="p-6 sm:p-8">
-            <!-- Client Info -->
-            <div class="border-b border-gray-200 pb-6 mb-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Cliente</h3>
-                <div class="flex items-center">
-                    <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <span class="text-indigo-600 font-bold text-lg">{{ cuenta.cliente.nombre[0] }}</span>
-                    </div>
-                    <div class="ml-4">
-                        <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="text-lg font-medium text-gray-900 hover:text-indigo-600">
-                            {{ cuenta.cliente.nombre }}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1">
+                    <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                        <div class="flex items-center space-x-3 mb-5">
+                            <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
+                                <i class="fas fa-user-circle text-primary-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">Cliente</h4>
+                        </div>
+                        <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="flex items-center space-x-3 hover:bg-white p-2 -mx-2 rounded-xl transition-colors">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
+                                <span class="text-primary-700 font-bold text-lg">{{ cuenta.cliente.nombre[0] }}</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">{{ cuenta.cliente.nombre }}</p>
+                                {% if cuenta.cliente.email %}
+                                <p class="text-xs text-slate-500">{{ cuenta.cliente.email }}</p>
+                                {% endif %}
+                            </div>
                         </a>
-                        {% if cuenta.cliente.email %}
-                        <p class="text-sm text-gray-500">{{ cuenta.cliente.email }}</p>
-                        {% endif %}
+
+                        <div class="mt-6 pt-5 border-t border-slate-200 space-y-4">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Factura</p>
+                                <p class="font-mono font-semibold text-slate-700 mt-1">{{ cuenta.numero_factura }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Firma</p>
+                                <p class="text-sm text-slate-700 mt-1">{{ cuenta.firma.nombre if cuenta.firma else 'Sin firma' }}</p>
+                            </div>
+                            {% if cuenta.numero_cuenta_pago %}
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cuenta de pago</p>
+                                <p class="text-sm text-slate-700 mt-1 font-mono">{{ cuenta.numero_cuenta_pago }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Invoice Details -->
-            <div class="border-b border-gray-200 pb-6 mb-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Detalles</h3>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="lg:col-span-2 space-y-6">
                     <div>
-                        <span class="text-sm text-gray-500">Número de Factura</span>
-                        <p class="text-sm font-medium text-gray-900">{{ cuenta.numero_factura }}</p>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-align-left text-blue-600"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-900">Concepto</h4>
+                        </div>
+                        <div class="p-5 rounded-xl bg-slate-50 border border-slate-100">
+                            <p class="text-slate-700 leading-relaxed">{{ cuenta.concepto }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <span class="text-sm text-gray-500">Fecha</span>
-                        <p class="text-sm font-medium text-gray-900">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</p>
-                    </div>
-                    <div>
-                        <span class="text-sm text-gray-500">Firma seleccionada</span>
-                        <p class="text-sm font-medium text-gray-900">{{ cuenta.firma.nombre if cuenta.firma else 'Sin firma' }}</p>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <span class="text-sm text-gray-500">Número de cuenta para pago</span>
-                        <p class="text-sm font-medium text-gray-900">{{ cuenta.numero_cuenta_pago or '—' }}</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Concept -->
-            <div class="border-b border-gray-200 pb-6 mb-6">
-                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Concepto</h3>
-                <p class="text-gray-900">{{ cuenta.concepto }}</p>
-            </div>
-
-            <!-- Amount -->
-            <div class="bg-gray-50 -mx-6 -mb-6 px-6 py-6 sm:-mx-8 sm:-mb-8 sm:px-8">
-                <div class="flex justify-between items-center">
-                    <span class="text-lg font-medium text-gray-900">Total</span>
-                    <span class="text-3xl font-bold text-gray-900">{{ cuenta.monto|format_cop_co }}</span>
+                    <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 sm:p-8 text-white">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-300 font-medium">Total a cobrar</span>
+                            {% if cuenta.estado == 'pagado' %}
+                                <span class="badge px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">PAGADO</span>
+                            {% else %}
+                                <span class="badge px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">PENDIENTE</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-4xl sm:text-5xl font-bold tracking-tight">
+                            {{ cuenta.monto|format_cop_co }}
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between text-sm text-slate-400">
+                            <span>Fecha de emisión</span>
+                            <span class="font-medium text-slate-300">{{ cuenta.fecha_documento.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="flex justify-between">
-        <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" onsubmit="return confirm('¿Eliminar esta cuenta de cobro? Esta acción no se puede deshacer.')">
-            <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
-                <i class="fas fa-trash mr-1"></i>Eliminar Cuenta
+    <div class="flex items-center justify-between slide-up" style="animation-delay: 0.2s;">
+        <form method="POST" action="{{ url_for('eliminar_cuenta', id=cuenta.id) }}" onsubmit="return confirm('¿Eliminar esta cuenta de cobro?')">
+            <button type="submit" class="inline-flex items-center px-4 py-2 rounded-xl text-red-600 font-medium text-sm hover:bg-red-50 transition-colors">
+                <i class="fas fa-trash mr-2"></i>Eliminar Cuenta
             </button>
         </form>
-
-        <a href="{{ url_for('listar_cuentas') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-            Ver todas las cuentas →
+        <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center">
+            Ver todas las cuentas <i class="fas fa-arrow-right ml-2"></i>
         </a>
     </div>
-
 </div>
 {% endblock %}

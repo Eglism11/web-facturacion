@@ -3,139 +3,177 @@
 {% block title %}Nueva Cuenta de Cobro - Facturación{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <!-- Header -->
-    <div class="mb-6">
-        <a href="{{ url_for('listar_cuentas') }}" class="text-sm text-gray-500 hover:text-gray-700">
-            ← Volver a cuentas
+<div class="max-w-2xl mx-auto space-y-8 fade-in">
+    <div class="page-header">
+        <a href="{{ url_for('listar_cuentas') }}" class="inline-flex items-center text-sm text-slate-500 hover:text-primary-600 mb-4 font-medium">
+            <i class="fas fa-arrow-left mr-2"></i>Volver a cuentas
         </a>
-        <h2 class="mt-2 text-2xl font-bold text-gray-900">Nueva Cuenta de Cobro</h2>
-        <p class="mt-1 text-sm text-gray-500">Genera una cuenta de cobro para un cliente</p>
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
+                <i class="fas fa-file-invoice-dollar text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Nueva Cuenta de Cobro</h1>
+                <p class="text-slate-500 font-medium">Genera una cuenta de cobro para un cliente</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Form -->
-    <div class="bg-white shadow rounded-lg">
-        <form method="POST" class="p-6 space-y-6">
-
-            <!-- 1. Cliente -->
-            <div>
-                <label for="cliente_id" class="block text-sm font-medium text-gray-700">
-                    Cliente *
+    <div class="glass-card rounded-2xl p-6 sm:p-8 slide-up">
+        <form method="POST" class="space-y-6">
+            <div class="space-y-2">
+                <label for="cliente_id" class="block text-sm font-semibold text-slate-700">
+                    Cliente <span class="text-red-500">*</span>
                 </label>
-                <select name="cliente_id" id="cliente_id" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Selecciona un cliente</option>
-                    {% for cliente in clientes %}
-                    <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
-                    {% endfor %}
-                </select>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-slate-400"></i>
+                    </div>
+                    <select name="cliente_id" id="cliente_id" required
+                            class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900 appearance-none cursor-pointer">
+                        <option value="">Selecciona un cliente</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-slate-400"></i>
+                    </div>
+                </div>
                 {% if not clientes %}
-                <p class="mt-2 text-sm text-red-600">
-                    No hay clientes. <a href="{{ url_for('crear_cliente') }}" class="underline">Agrega uno primero</a>.
+                <p class="text-sm text-red-600 mt-2">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    No hay clientes. <a href="{{ url_for('crear_cliente') }}" class="underline font-medium">Agrega uno primero</a>.
                 </p>
                 {% endif %}
             </div>
 
-            <!-- 2. Fecha -->
-            <div>
-                <label for="fecha_documento" class="block text-sm font-medium text-gray-700">
-                    Fecha *
+            <div class="space-y-2">
+                <label for="fecha_documento" class="block text-sm font-semibold text-slate-700">
+                    Fecha <span class="text-red-500">*</span>
                 </label>
-                <input type="date" name="fecha_documento" id="fecha_documento" required value="{{ today }}"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-calendar text-slate-400"></i>
+                    </div>
+                    <input type="date" name="fecha_documento" id="fecha_documento" required value="{{ today }}"
+                           class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900">
+                </div>
             </div>
 
-            <!-- 3. Concepto -->
-            <div>
-                <label for="concepto" class="block text-sm font-medium text-gray-700">
-                    Concepto *
+            <div class="space-y-2">
+                <label for="concepto" class="block text-sm font-semibold text-slate-700">
+                    Concepto <span class="text-red-500">*</span>
                 </label>
-                <textarea name="concepto" id="concepto" rows="3" required
-                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                          placeholder="Descripción del servicio o producto..."></textarea>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none pt-3">
+                        <i class="fas fa-align-left text-slate-400"></i>
+                    </div>
+                    <textarea name="concepto" id="concepto" rows="3" required
+                              class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400 resize-none"
+                              placeholder="Descripción del servicio o producto..."></textarea>
+                </div>
             </div>
 
-            <!-- 4. Monto -->
-            <div>
-                <label for="monto_display" class="block text-sm font-medium text-gray-700">
-                    Monto ($) *
+            <div class="space-y-2">
+                <label for="monto_display" class="block text-sm font-semibold text-slate-700">
+                    Monto ($) <span class="text-red-500">*</span>
                 </label>
-                <div class="mt-1 relative rounded-md shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 sm:text-sm">$</span>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="text-slate-500 font-semibold">$</span>
                     </div>
                     <input type="text" id="monto_display" required inputmode="decimal" autocomplete="off"
-                           class="block w-full pl-7 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400 text-lg font-semibold"
                            placeholder="5.000.000">
                     <input type="hidden" name="monto" id="monto" value="">
                 </div>
-                <p class="mt-1 text-xs text-gray-500">Usa punto para miles (ej: 5.000.000) y coma para decimales si aplica.</p>
+                <p class="text-xs text-slate-500 mt-1">
+                    <i class="fas fa-info-circle mr-1"></i>Usa punto para miles (ej: 5.000.000)
+                </p>
             </div>
 
-            <!-- Número de cuenta para pago -->
-            <div>
-                <label for="cuenta_bancaria_id" class="block text-sm font-medium text-gray-700">
+            <div class="space-y-2">
+                <label for="cuenta_bancaria_id" class="block text-sm font-semibold text-slate-700">
                     Cuenta Bancaria
                 </label>
                 {% if cuentas_bancarias %}
-                <select name="cuenta_bancaria_id" id="cuenta_bancaria_id"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Seleccionar cuenta...</option>
-                    {% for cuenta in cuentas_bancarias %}
-                    <option value="{{ cuenta.id }}" {% if perfil.numero_cuenta == cuenta.numero_cuenta %}selected{% endif %}>
-                        {{ cuenta.nombre_banco }} - {{ cuenta.tipo_cuenta }} ({{ cuenta.numero_cuenta }}){% if cuenta.es_principal %} (Principal){% endif %}
-                    </option>
-                    {% endfor %}
-                </select>
-                <p class="mt-1 text-xs text-gray-500">O escribe manualmente</p>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-university text-slate-400"></i>
+                    </div>
+                    <select name="cuenta_bancaria_id" id="cuenta_bancaria_id"
+                            class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900 appearance-none cursor-pointer">
+                        <option value="">Seleccionar cuenta...</option>
+                        {% for cuenta in cuentas_bancarias %}
+                        <option value="{{ cuenta.id }}" {% if perfil.numero_cuenta == cuenta.numero_cuenta %}selected{% endif %}>
+                            {{ cuenta.nombre_banco }} - {{ cuenta.tipo_cuenta }} ({{ cuenta.numero_cuenta }}){% if cuenta.es_principal %} (Principal){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-slate-400"></i>
+                    </div>
+                </div>
                 {% endif %}
                 
                 <input type="text" name="numero_cuenta_pago" id="numero_cuenta_pago" 
                        value="{{ perfil.numero_cuenta if perfil else '' }}"
-                       class="mt-2 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                       placeholder="Número de cuenta manual (requerido si no seleccionas arriba)">
+                       class="input-field w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400"
+                       placeholder="O escribe manualmente el número de cuenta">
             </div>
 
-            <!-- 5. Firma -->
-            <div>
-                <label for="firma_id" class="block text-sm font-medium text-gray-700">
+            <div class="space-y-2">
+                <label for="firma_id" class="block text-sm font-semibold text-slate-700">
                     Firma (opcional)
                 </label>
-                <select name="firma_id" id="firma_id"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="">Mi firma guardada (automático)</option>
-                    {% for firma in firmas %}
-                    <option value="{{ firma.id }}">{{ firma.nombre }}</option>
-                    {% endfor %}
-                </select>
-                <p class="mt-2 text-xs text-gray-500">
-                    Se usará automáticamente tu firma de "Mi Perfil"
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-signature text-slate-400"></i>
+                    </div>
+                    <select name="firma_id" id="firma_id"
+                            class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900 appearance-none cursor-pointer">
+                        <option value="">Mi firma guardada (automático)</option>
+                        {% for firma in firmas %}
+                        <option value="{{ firma.id }}">{{ firma.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-slate-400"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">
+                    <i class="fas fa-lightbulb text-amber-500 mr-1"></i>Se usará automáticamente tu firma de "Mi Perfil"
                 </p>
             </div>
 
-            <!-- Estado -->
-            <div>
-                <label for="estado" class="block text-sm font-medium text-gray-700">
+            <div class="space-y-2">
+                <label for="estado" class="block text-sm font-semibold text-slate-700">
                     Estado
                 </label>
-                <select name="estado" id="estado"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <option value="pendiente">Pendiente</option>
-                    <option value="pagado">Pagado</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500">Selecciona "Pagado" si ya recibiste el pago</p>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-flag text-slate-400"></i>
+                    </div>
+                    <select name="estado" id="estado"
+                            class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900 appearance-none cursor-pointer">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="pagado">Pagado</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-slate-400"></i>
+                    </div>
+                </div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex justify-end space-x-3 pt-4 border-t">
-                <a href="{{ url_for('listar_cuentas') }}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                    Cancelar
+            <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                <a href="{{ url_for('listar_cuentas') }}" class="btn-secondary w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 rounded-xl text-slate-700 font-semibold text-sm">
+                    <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700">
-                    <i class="fas fa-file-invoice mr-2"></i>Generar Cuenta de Cobro
+                <button type="submit" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-semibold text-sm">
+                    <i class="fas fa-file-invoice mr-2"></i>Generar Cuenta
                 </button>
             </div>
-
         </form>
     </div>
 </div>
