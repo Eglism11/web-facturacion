@@ -14,7 +14,7 @@
                     <i class="fas fa-file-invoice text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ cuenta.numero_factura }}</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{{ cuenta.numero_factura }}</h1>
                     <p class="text-slate-500 font-medium">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</p>
                 </div>
             </div>
@@ -60,14 +60,14 @@
                             <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
                                 <i class="fas fa-user-circle text-primary-600"></i>
                             </div>
-                            <h4 class="font-bold text-slate-900">Cliente</h4>
+                            <h4 class="font-bold text-gray-900">Cliente</h4>
                         </div>
                         <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="flex items-center space-x-3 hover:bg-white p-2 -mx-2 rounded-xl transition-colors">
                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
                                 <span class="text-primary-700 font-bold text-lg">{{ cuenta.cliente.nombre[0] }}</span>
                             </div>
                             <div>
-                                <p class="font-semibold text-slate-900">{{ cuenta.cliente.nombre }}</p>
+                                <p class="font-semibold text-gray-900">{{ cuenta.cliente.nombre }}</p>
                                 {% if cuenta.cliente.email %}
                                 <p class="text-xs text-slate-500">{{ cuenta.cliente.email }}</p>
                                 {% endif %}
@@ -99,7 +99,7 @@
                             <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                                 <i class="fas fa-align-left text-blue-600"></i>
                             </div>
-                            <h4 class="font-bold text-slate-900">Concepto</h4>
+                            <h4 class="font-bold text-gray-900">Concepto</h4>
                         </div>
                         <div class="p-5 rounded-xl bg-slate-50 border border-slate-100">
                             <p class="text-slate-700 leading-relaxed">{{ cuenta.concepto }}</p>

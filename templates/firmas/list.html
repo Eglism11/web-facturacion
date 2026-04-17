@@ -11,7 +11,7 @@
                     <i class="fas fa-signature text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Mis Firmas</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Mis Firmas</h1>
                     <p class="text-slate-500 font-medium">Sube y administra tus firmas para los PDF</p>
                 </div>
             </div>
@@ -25,7 +25,7 @@
                     <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                         <i class="fas fa-plus text-purple-600"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900">Nueva firma</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Nueva firma</h3>
                 </div>
 
                 <form method="POST" enctype="multipart/form-data" class="space-y-5">
@@ -39,7 +39,7 @@
                             </div>
                             <input type="text" name="nombre" id="nombre" required
                                    placeholder="Ej: Firma Jesús Briceño"
-                                   class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400">
+                                   class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-gray-900 placeholder-slate-400">
                         </div>
                     </div>
 
@@ -76,7 +76,7 @@
                         <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
                             <i class="fas fa-images text-primary-600"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900">Firmas guardadas</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Firmas guardadas</h3>
                         {% if firmas %}
                             <span class="badge px-2.5 py-0.5 rounded-full bg-primary-50 text-primary-600 text-xs font-bold ml-2">
                                 {{ firmas|length }}
@@ -97,7 +97,7 @@
                                                  class="max-h-full max-w-full object-contain">
                                         </div>
                                         <div>
-                                            <p class="font-semibold text-slate-900">{{ firma.nombre }}</p>
+                                            <p class="font-semibold text-gray-900">{{ firma.nombre }}</p>
                                             <p class="text-sm text-slate-500 mt-1">
                                                 <i class="fas fa-calendar mr-1"></i>
                                                 Creada el {{ firma.created_at.strftime('%d %b %Y') }}

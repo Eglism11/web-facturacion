@@ -14,7 +14,7 @@
                     <i class="fas fa-user text-primary-600 text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Mi Perfil</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Mi Perfil</h1>
                     <p class="text-slate-500 font-medium">Configura tus datos para los documentos PDF</p>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                         <i class="fas fa-user-circle text-primary-600"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900">Información Personal</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Información Personal</h3>
                         <p class="text-sm text-slate-500">Datos que aparecerán en tus facturas</p>
                     </div>
                 </div>
@@ -45,7 +45,7 @@
                                     <i class="fas fa-id-card text-slate-400"></i>
                                 </div>
                                 <input type="text" name="nombre_completo" id="nombre_completo" value="{{ usuario.nombre_completo or '' }}"
-                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400"
+                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-gray-900 placeholder-slate-400"
                                        placeholder="Juan Pérez">
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                                     <i class="fas fa-passport text-slate-400"></i>
                                 </div>
                                 <input type="text" name="cedula" id="cedula" value="{{ usuario.cedula or '' }}"
-                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400"
+                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-gray-900 placeholder-slate-400"
                                        placeholder="1234567890">
                             </div>
                         </div>
@@ -80,7 +80,7 @@
                             <i class="fas fa-university text-blue-600"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-slate-900">Cuentas Bancarias</h3>
+                            <h3 class="text-lg font-bold text-gray-900">Cuentas Bancarias</h3>
                             <p class="text-sm text-slate-500">Datos para recibir pagos</p>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                                         <i class="fas fa-university {% if cuenta.es_principal %}text-primary-600{% else %}text-slate-500{% endif %}"></i>
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-slate-900">{{ cuenta.nombre_banco }}</p>
+                                        <p class="font-semibold text-gray-900">{{ cuenta.nombre_banco }}</p>
                                         <p class="text-sm text-slate-500">{{ cuenta.tipo_cuenta }} · {{ cuenta.numero_cuenta }}</p>
                                         {% if cuenta.es_principal %}
                                             <span class="badge inline-block mt-1 px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-600 text-xs font-semibold">Principal</span>
@@ -132,13 +132,13 @@
                             <div class="space-y-2">
                                 <label for="nombre_banco" class="block text-sm font-medium text-slate-700">Banco</label>
                                 <input type="text" name="nombre_banco" id="nombre_banco" required
-                                       class="input-field w-full px-4 py-3 rounded-xl bg-white text-slate-900 placeholder-slate-400"
+                                       class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900 placeholder-slate-400"
                                        placeholder="Nequi, Banco de Bogotá...">
                             </div>
                             <div class="space-y-2">
                                 <label for="tipo_cuenta" class="block text-sm font-medium text-slate-700">Tipo</label>
                                 <select name="tipo_cuenta" id="tipo_cuenta" required
-                                        class="input-field w-full px-4 py-3 rounded-xl bg-white text-slate-900">
+                                        class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900">
                                     <option value="Ahorros">Ahorros</option>
                                     <option value="Corriente">Corriente</option>
                                     <option value="Nequi">Nequi</option>
@@ -150,7 +150,7 @@
                         <div class="space-y-2">
                             <label for="nueva_cuenta_numero" class="block text-sm font-medium text-slate-700">Número de Cuenta</label>
                             <input type="text" name="numero_cuenta" id="nueva_cuenta_numero" required
-                                   class="input-field w-full px-4 py-3 rounded-xl bg-white text-slate-900 placeholder-slate-400"
+                                   class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900 placeholder-slate-400"
                                    placeholder="3001234567">
                         </div>
                         <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
@@ -166,7 +166,7 @@
                         <i class="fas fa-signature text-purple-600"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900">Firma Digital</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Firma Digital</h3>
                         <p class="text-sm text-slate-500">Tu firma para los documentos PDF</p>
                     </div>
                 </div>
@@ -177,7 +177,7 @@
                             <div class="flex items-center space-x-4">
                                 <img src="{{ firma_actual }}" alt="Firma actual" class="h-20 object-contain bg-white p-2 rounded-lg border shadow-sm">
                                 <div>
-                                    <p class="font-medium text-slate-900">Firma registrada</p>
+                                    <p class="font-medium text-gray-900">Firma registrada</p>
                                     <p class="text-sm text-slate-500">Visible en tus facturas</p>
                                 </div>
                             </div>
@@ -215,7 +215,7 @@
                     <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                         <i class="fas fa-lightbulb text-amber-600"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900">Tips</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Tips</h3>
                 </div>
                 <div class="space-y-4">
                     <div class="p-4 rounded-xl bg-blue-50 border border-blue-100">

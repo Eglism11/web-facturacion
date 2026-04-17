@@ -14,7 +14,7 @@
                     <span class="text-primary-700 font-bold text-2xl">{{ cliente.nombre[0] }}</span>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ cliente.nombre }}</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{{ cliente.nombre }}</h1>
                     <p class="text-slate-500 font-medium">Cliente desde {{ cliente.created_at.strftime('%d %b %Y') }}</p>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                     <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
                         <i class="fas fa-user-circle text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900">Información</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Información</h3>
                 </div>
             </div>
             <div class="p-6 space-y-5">
@@ -99,7 +99,7 @@
                     <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
                         <i class="fas fa-file-invoice text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900">Historial de Cuentas</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Historial de Cuentas</h3>
                 </div>
                 <a href="{{ url_for('crear_cuenta') }}" class="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center">
                     <i class="fas fa-plus mr-2"></i>Nueva cuenta
@@ -121,7 +121,7 @@
                                     </div>
                                     <div>
                                         <div class="flex items-center space-x-3">
-                                            <span class="font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                                            <span class="font-semibold text-gray-900">{{ cuenta.numero_factura }}</span>
                                             {% if cuenta.estado == 'pagado' %}
                                                 <span class="badge px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold">Pagado</span>
                                             {% else %}
@@ -133,7 +133,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-lg font-bold text-slate-900">{{ cuenta.monto|format_cop_co }}</span>
+                                    <span class="text-lg font-bold text-gray-900">{{ cuenta.monto|format_cop_co }}</span>
                                     <p class="text-xs text-slate-400 mt-1">Ver detalles →</p>
                                 </div>
                             </div>

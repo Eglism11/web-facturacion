@@ -13,7 +13,7 @@
                 <i class="fas fa-edit text-white text-xl"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Editar Cliente</h1>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Editar Cliente</h1>
                 <p class="text-slate-500 font-medium">Actualiza la información de {{ cliente.nombre }}</p>
             </div>
         </div>
@@ -31,7 +31,7 @@
                             <i class="fas fa-user text-slate-400"></i>
                         </div>
                         <input type="text" name="nombre" id="nombre" required value="{{ cliente.nombre }}"
-                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900">
+                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-gray-900">
                     </div>
                 </div>
 
@@ -44,7 +44,7 @@
                             <i class="fas fa-envelope text-slate-400"></i>
                         </div>
                         <input type="email" name="email" id="email" value="{{ cliente.email or '' }}"
-                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900"
+                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-gray-900"
                                placeholder="cliente@ejemplo.com">
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                             <i class="fas fa-phone text-slate-400"></i>
                         </div>
                         <input type="tel" name="telefono" id="telefono" value="{{ cliente.telefono or '' }}"
-                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900"
+                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-gray-900"
                                placeholder="300 123 4567">
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                             <i class="fas fa-id-card text-slate-400"></i>
                         </div>
                         <input type="text" name="identificacion" id="identificacion" value="{{ cliente.identificacion or '' }}"
-                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-slate-900"
+                               class="input-field w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 text-gray-900"
                                placeholder="Cédula, NIT, C.E.">
                     </div>
                 </div>

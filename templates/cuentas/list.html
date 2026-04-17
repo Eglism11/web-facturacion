@@ -11,7 +11,7 @@
                     <i class="fas fa-file-invoice text-primary-600 text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Cuentas de Cobro</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Cuentas de Cobro</h1>
                     <p class="text-slate-500 font-medium">Gestiona todas tus facturas y cuentas</p>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                 {% for cuenta in cuentas.items %}
                     <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="block bg-white p-3.5 hover:bg-slate-50 transition-all cursor-pointer">
                         <div class="flex items-center justify-between mb-1.5">
-                            <span class="text-sm font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ cuenta.numero_factura }}</span>
                             {% if cuenta.estado == 'pagado' %}
                                 <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Pagado</span>
                             {% else %}
@@ -57,7 +57,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-slate-400">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</span>
-                            <span class="text-base font-bold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
+                            <span class="text-base font-bold text-gray-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                         </div>
                     </a>
                 {% endfor %}
@@ -87,7 +87,7 @@
                                                 <i class="fas fa-clock text-amber-600 text-sm"></i>
                                             {% endif %}
                                         </div>
-                                        <span class="font-medium text-slate-900 text-sm">{{ cuenta.numero_factura }}</span>
+                                        <span class="font-medium text-gray-900 text-sm">{{ cuenta.numero_factura }}</span>
                                     </div>
                                 </td>
                                 <td class="px-3 py-3 hidden sm:table-cell">
@@ -109,7 +109,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-3 py-3 text-right">
-                                    <span class="text-sm font-semibold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
+                                    <span class="text-sm font-semibold text-gray-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                                 </td>
                                 <td class="px-3 py-3 text-right">
                                     <div class="flex items-center justify-end space-x-2">
