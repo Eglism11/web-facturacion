@@ -110,55 +110,41 @@
     </div>
 
     <div class="glass-card rounded-xl overflow-hidden slide-up" style="animation-delay: 0.4s;">
-        <div class="px-5 py-4 border-b border-slate-50 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
-                    <i class="fas fa-file-invoice text-primary-600 text-sm"></i>
+        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-primary-600 text-xs"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-semibold text-slate-900">Cuentas Recientes</h3>
-                    <p class="text-sm text-slate-500">Últimas cuentas creadas</p>
+                    <h3 class="text-sm font-semibold text-slate-900">Cuentas Recientes</h3>
                 </div>
             </div>
-            <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-medium text-primary-600 hover:text-primary-700 inline-flex items-center">
-                Ver todas <i class="fas fa-arrow-right ml-1.5"></i>
+            <a href="{{ url_for('listar_cuentas') }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">
+                Ver todas <i class="fas fa-arrow-right ml-1"></i>
             </a>
         </div>
 
         {% if cuentas_recientes %}
-            <div class="divide-y divide-slate-100">
+            <div class="space-y-2">
                 {% for cuenta in cuentas_recientes %}
-                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="group block px-5 py-4 hover:bg-slate-50 transition-all duration-200 cursor-pointer">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3.5">
-                                <div class="w-9 h-9 rounded-lg flex items-center justify-center {% if cuenta.estado == 'pagado' %}bg-emerald-50{% else %}bg-amber-50{% endif %}">
-                                    {% if cuenta.estado == 'pagado' %}
-                                        <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
-                                    {% else %}
-                                        <i class="fas fa-clock text-amber-600 text-sm"></i>
-                                    {% endif %}
+                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="stat-card block p-4 rounded-xl hover:border-slate-200 transition-all duration-200 cursor-pointer">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-sm font-semibold text-slate-900 truncate">{{ cuenta.numero_factura }}</span>
+                                    <span class="text-xs text-slate-400">{{ cuenta.fecha_documento.strftime('%d %b') }}</span>
                                 </div>
-                                <div>
-                                    <div class="flex items-center space-x-2 mb-0.5">
-                                        <span class="text-base font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
-                                        {% if cuenta.estado == 'pagado' %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">
-                                                Pagado
-                                            </span>
-                                        {% else %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">
-                                                Pendiente
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <p class="text-sm text-slate-500">
-                                        {{ cuenta.cliente.nombre }} · {{ cuenta.concepto[:45] }}{% if cuenta.concepto|length > 45 %}...{% endif %}
-                                    </p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm text-slate-500 truncate">{{ cuenta.cliente.nombre }}</span>
                                 </div>
                             </div>
-                            <div class="text-right flex-shrink-0 ml-2 sm:ml-3">
-                                <span class="text-sm sm:text-base font-semibold text-slate-900 break-all leading-tight">{{ cuenta.monto|format_cop_co }}</span>
-                                <p class="text-xs text-slate-400 mt-0.5">{{ cuenta.fecha_documento.strftime('%d %b') }}</p>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                {% if cuenta.estado == 'pagado' %}
+                                    <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Pagado</span>
+                                {% else %}
+                                    <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
+                                {% endif %}
+                                <span class="text-sm sm:text-base font-semibold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                             </div>
                         </div>
                     </a>
