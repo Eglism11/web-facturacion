@@ -18,7 +18,7 @@
         </div>
         
         <div class="slide-up stagger-1">
-            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm shadow-lg">
+            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center justify-center px-5 py-3 sm:py-2.5 text-white font-semibold text-sm rounded-lg shadow-lg w-full sm:w-auto">
                 <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
             </a>
         </div>
@@ -35,11 +35,11 @@
                        placeholder="Buscar por nombre o email...">
             </div>
             <div class="flex items-center gap-3">
-                <button type="submit" class="btn-primary inline-flex items-center px-5 py-3 text-white font-semibold text-sm">
+                <button type="submit" class="btn-primary inline-flex items-center justify-center px-5 py-3 text-white font-semibold text-sm rounded-lg w-full sm:w-auto">
                     <i class="fas fa-search mr-2"></i>Buscar
                 </button>
                 {% if search %}
-                    <a href="{{ url_for('listar_clientes') }}" class="btn-secondary inline-flex items-center px-5 py-3 text-gray-700 font-medium text-sm">
+                    <a href="{{ url_for('listar_clientes') }}" class="btn-secondary inline-flex items-center justify-center px-5 py-3 text-gray-700 font-medium text-sm rounded-lg w-full sm:w-auto">
                         <i class="fas fa-times mr-2"></i>Limpiar
                     </a>
                 {% endif %}
@@ -120,12 +120,12 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         {% if clientes.has_prev %}
-                            <a href="{{ url_for('listar_clientes', page=clientes.prev_num, q=search) }}" class="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium">
+                            <a href="{{ url_for('listar_clientes', page=clientes.prev_num, q=search) }}" class="btn-secondary inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg w-full sm:w-auto">
                                 <i class="fas fa-chevron-left mr-2"></i>Anterior
                             </a>
                         {% endif %}
                         {% if clientes.has_next %}
-                            <a href="{{ url_for('listar_clientes', page=clientes.next_num, q=search) }}" class="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium text-white">
+                            <a href="{{ url_for('listar_clientes', page=clientes.next_num, q=search) }}" class="btn-primary inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white rounded-lg w-full sm:w-auto">
                                 Siguiente<i class="fas fa-chevron-right ml-2"></i>
                             </a>
                         {% endif %}
@@ -145,7 +145,7 @@
                     {% if search %}Intenta con otro término de búsqueda{% else %}Comienza agregando tu primer cliente{% endif %}
                 </p>
                 {% if not search %}
-                    <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm">
+                    <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center justify-center px-5 py-3 sm:py-2.5 text-white font-semibold text-sm rounded-lg w-full sm:w-auto">
                         <i class="fas fa-user-plus mr-2"></i>Agregar cliente
                     </a>
                 {% endif %}

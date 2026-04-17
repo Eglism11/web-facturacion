@@ -18,7 +18,7 @@
         </div>
         
         <div class="slide-up stagger-1">
-            <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm shadow-lg">
+            <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center justify-center px-5 py-3 sm:py-2.5 text-white font-semibold text-sm rounded-lg shadow-lg w-full sm:w-auto">
                 <i class="fas fa-plus mr-2"></i>Nueva Cuenta
             </a>
         </div>
@@ -134,12 +134,12 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         {% if cuentas.has_prev %}
-                            <a href="{{ url_for('listar_cuentas', page=cuentas.prev_num, estado=estado) }}" class="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium">
+                            <a href="{{ url_for('listar_cuentas', page=cuentas.prev_num, estado=estado) }}" class="btn-secondary inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg w-full sm:w-auto">
                                 <i class="fas fa-chevron-left mr-2"></i>Anterior
                             </a>
                         {% endif %}
                         {% if cuentas.has_next %}
-                            <a href="{{ url_for('listar_cuentas', page=cuentas.next_num, estado=estado) }}" class="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium text-white">
+                            <a href="{{ url_for('listar_cuentas', page=cuentas.next_num, estado=estado) }}" class="btn-primary inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white rounded-lg w-full sm:w-auto">
                                 Siguiente<i class="fas fa-chevron-right ml-2"></i>
                             </a>
                         {% endif %}
@@ -157,7 +157,7 @@
                     {% if estado %}No hay cuentas con estado "{{ estado }}"{% else %}Comienza creando tu primera cuenta de cobro{% endif %}
                 </p>
                 {% if not estado %}
-                    <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm">
+                    <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center justify-center px-5 py-3 sm:py-2.5 text-white font-semibold text-sm rounded-lg w-full sm:w-auto">
                         <i class="fas fa-plus mr-2"></i>Crear cuenta
                     </a>
                 {% endif %}
