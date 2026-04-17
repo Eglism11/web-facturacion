@@ -78,10 +78,11 @@
         }
 
         .nav-link {
-            display: block;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #4b5563;
             transition: all 0.2s;
@@ -89,7 +90,7 @@
 
         .nav-link:hover {
             color: #111827;
-            background-color: #f3f4f6;
+            background-color: #f8fafc;
         }
 
         .nav-link.active {
@@ -236,40 +237,40 @@
     {% if current_user.is_authenticated %}
     <nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-16">
+            <div class="flex items-center justify-between h-20">
                 <div class="flex items-center">
-                    <a href="{{ url_for('index') }}" class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center border border-gray-200">
-                            <i class="fas fa-file-invoice-dollar text-purple-600 text-lg"></i>
+                    <a href="{{ url_for('index') }}" class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center border border-gray-200">
+                            <i class="fas fa-file-invoice-dollar text-purple-600 text-xl"></i>
                         </div>
-                        <span class="font-bold text-xl text-gray-900 tracking-tight hidden sm:block">Facturación</span>
+                        <span class="font-bold text-xl text-gray-900 tracking-tight hidden md:block">Facturación</span>
                     </a>
                 </div>
 
-                <div class="hidden md:flex items-center gap-1">
+                <div class="hidden md:flex items-center gap-2 px-4">
                     <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
-                        <i class="fas fa-home mr-2"></i>Inicio
+                        <i class="fas fa-home mr-2.5 text-lg"></i>Inicio
                     </a>
                     <a href="{{ url_for('listar_clientes') }}" class="nav-link {% if 'cliente' in request.endpoint %}active{% endif %}">
-                        <i class="fas fa-users mr-2"></i>Clientes
+                        <i class="fas fa-users mr-2.5 text-lg"></i>Clientes
                     </a>
                     <a href="{{ url_for('listar_cuentas') }}" class="nav-link {% if 'cuenta' in request.endpoint and request.endpoint != 'crear_cuenta' %}active{% endif %}">
-                        <i class="fas fa-file-invoice mr-2"></i>Cuentas
+                        <i class="fas fa-file-invoice mr-2.5 text-lg"></i>Cuentas
                     </a>
                     <a href="{{ url_for('perfil') }}" class="nav-link {% if request.endpoint == 'perfil' %}active{% endif %}">
-                        <i class="fas fa-user-circle mr-2"></i>Mi Perfil
+                        <i class="fas fa-user-circle mr-2.5 text-lg"></i>Mi Perfil
                     </a>
                 </div>
 
-                <div class="hidden md:flex items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                            <i class="fas fa-user text-gray-500 text-xs"></i>
+                <div class="hidden md:flex items-center gap-4">
+                    <div class="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg">
+                        <div class="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user text-purple-600 text-sm"></i>
                         </div>
-                        <span class="text-gray-700 text-sm font-medium">{{ current_user.username }}</span>
+                        <span class="text-gray-700 text-base font-medium">{{ current_user.username }}</span>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <a href="{{ url_for('logout') }}" class="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
                     </a>
                 </div>
             </div>
