@@ -91,7 +91,7 @@
                         {% for cuenta in cuentas_bancarias %}
                             <div class="flex items-center justify-between p-4 border border-slate-200 hover:border-primary-300 transition-colors {% if cuenta.es_principal %}bg-primary-50 border-primary-200{% endif %}">
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 {% if cuenta.es_principal %}bg-primary-100{% else %}bg-gray-100{% endif %} flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-xl {% if cuenta.es_principal %}bg-primary-100{% else %}bg-gray-100{% endif %} flex items-center justify-center">
                                         <i class="fas fa-university {% if cuenta.es_principal %}text-primary-600{% else %}text-gray-500{% endif %}"></i>
                                     </div>
                                     <div>
