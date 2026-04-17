@@ -3,7 +3,7 @@
 {% block title %}Dashboard - Facturación{% endblock %}
 
 {% block content %}
-<div class="space-y-4 fade-in bg-white pb-24 pt-4">
+<div class="space-y-4 fade-in bg-white pb-28 pt-4">
     <div class="flex items-center justify-between px-3 py-4">
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
@@ -78,18 +78,16 @@
         </div>
     </div>
 
-    <div class="mt-6">
-    <div class="bg-white slide-up border border-gray-200 shadow-sm rounded-xl" style="animation-delay: 0.4s;">
-        <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
-                    <i class="fas fa-file-invoice text-gray-700 text-xs"></i>
+    <div class="mt-12">
+    <div class="bg-[#F9FAFB] rounded-[2rem] p-6" style="animation-delay: 0.4s;">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-gray-700 text-sm"></i>
                 </div>
-                <div>
-                    <h3 class="text-base font-bold text-gray-900">Cuentas Recientes</h3>
-                </div>
+                <h3 class="text-lg font-bold text-gray-900">Cuentas Recientes</h3>
             </div>
-            <a href="{{ url_for('listar_cuentas') }}" class="text-xs font-medium text-purple-600 hover:text-purple-700">
+            <a href="{{ url_for('listar_cuentas') }}" class="text-sm font-medium text-purple-600 hover:text-purple-700">
                 Ver todas <i class="fas fa-arrow-right ml-1"></i>
             </a>
         </div>
