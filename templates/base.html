@@ -59,163 +59,152 @@
 
     <style>
         body {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: #fafbfc;
             min-height: 100vh;
         }
-        
+
         .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
-        
+
         .nav-glass {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.98);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
-        
+
         .nav-link {
             display: block;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
-            color: #cbd5e1;
+            font-weight: 400;
+            color: #94a3b8;
             transition: all 0.2s;
         }
-        
+
         .nav-link:hover {
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.06);
         }
-        
+
         .nav-link.active {
             color: #ffffff;
-            background-color: rgba(16, 185, 129, 0.2);
+            background-color: rgba(16, 185, 129, 0.15);
         }
-        
+
         .mobile-nav-link {
             display: block;
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.875rem;
-            font-weight: 500;
-            color: #cbd5e1;
+            font-weight: 400;
+            color: #94a3b8;
             transition: all 0.2s;
         }
-        
+
         .mobile-nav-link:hover {
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.06);
         }
-        
+
         .mobile-nav-link.logout {
             color: #f87171;
         }
-        
+
         .mobile-nav-link.logout:hover {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: rgba(239, 68, 68, 0.08);
         }
-        
+
         .stat-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.4);
-        }
-        
-        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-color: #e2e8f0;
         }
-        
+
+        .btn-primary {
+            background: #10b981;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.25);
+        }
+
         .btn-secondary {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
-        
+
         .btn-secondary:hover {
             background: #f8fafc;
             border-color: #cbd5e1;
-            transform: translateY(-1px);
         }
-        
+
         .table-row {
             transition: all 0.2s ease;
         }
-        
+
         .table-row:hover {
-            background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+            background: #f8fafc;
         }
-        
+
         .badge {
             font-weight: 500;
             letter-spacing: 0.025em;
         }
-        
+
         .input-field {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             border: 1.5px solid #e2e8f0;
         }
-        
+
         .input-field:focus {
             border-color: #10b981;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
         }
-        
+
         .page-header {
             position: relative;
         }
-        
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -40px;
-            right: -20px;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        .slide-up { animation: slideUp 0.5s ease-out; }
-        
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(-8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .animate-slide-down {
             animation: slideDown 0.2s ease-out;
         }
-        
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-        .stagger-4 { animation-delay: 0.4s; }
+
+        .stagger-1 { animation-delay: 0.08s; }
+        .stagger-2 { animation-delay: 0.16s; }
+        .stagger-3 { animation-delay: 0.24s; }
+        .stagger-4 { animation-delay: 0.32s; }
     </style>
 
     {% block extra_css %}{% endblock %}
