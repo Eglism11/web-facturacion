@@ -16,81 +16,81 @@
         </div>
     </div>
 
-    <div class="md:hidden grid grid-cols-2 gap-3 px-3">
-        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2.5 rounded-lg bg-purple-50 inline-flex mb-2">
-                <i class="fas fa-users text-purple-600 text-sm"></i>
+    <div class="md:hidden grid grid-cols-2 gap-4 px-3">
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="fas fa-users text-purple-700 text-lg"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-500">Clientes</span>
             </div>
-            <p class="text-base font-bold text-gray-900 break-all">{{ total_clientes }}</p>
-            <p class="text-xs text-gray-500">Clientes</p>
+            <p class="text-3xl font-bold text-gray-900 leading-tight">{{ total_clientes }}</p>
         </div>
-        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2.5 rounded-lg bg-[#B39DDB] inline-flex mb-2">
-                <i class="fas fa-dollar-sign text-purple-800 text-sm"></i>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#E8F5E9] flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-green-700 text-lg"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-500">Ingresos</span>
             </div>
-            <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_facturado|format_cop_short }}</p>
-            <p class="text-xs text-gray-500">Ingresos</p>
+            <p class="text-2xl font-bold text-gray-900 leading-tight">{{ total_facturado|format_cop_short }}</p>
         </div>
-        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2.5 rounded-lg bg-[#FFE0B2] inline-flex mb-2">
-                <i class="fas fa-clock text-orange-700 text-sm"></i>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#E3F2FD] flex items-center justify-center">
+                    <i class="fas fa-clock text-blue-700 text-lg"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-500">Pendiente</span>
             </div>
-            <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_pendiente|format_cop_short }}</p>
-            <p class="text-xs text-gray-500">Pendiente</p>
+            <p class="text-2xl font-bold text-gray-900 leading-tight">{{ total_pendiente|format_cop_short }}</p>
         </div>
-        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2.5 rounded-lg bg-[#E6FF00] inline-flex mb-2">
-                <i class="fas fa-check-circle text-green-800 text-sm"></i>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#FFF3E0] flex items-center justify-center">
+                    <i class="fas fa-check-circle text-orange-700 text-lg"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-500">Cobrado</span>
             </div>
-            <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_pagado|format_cop_short }}</p>
-            <p class="text-xs text-gray-500">Cobrado</p>
+            <p class="text-2xl font-bold text-gray-900 leading-tight">{{ total_pagado|format_cop_short }}</p>
         </div>
     </div>
 
 <div class="hidden md:grid grid-cols-4 gap-4">
-        <div class="stat-card p-5 border border-gray-200 w-full">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="p-2.5 rounded-lg bg-purple-50">
-                        <i class="fas fa-users text-purple-600"></i>
-                    </div>
-                    <span class="text-sm text-gray-500">Clientes</span>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <i class="fas fa-users text-purple-700 text-lg"></i>
                 </div>
-                <span class="text-base font-bold text-gray-900 truncate max-w-[80px]">{{ total_clientes }}</span>
+                <span class="text-base font-semibold text-gray-500">Clientes</span>
             </div>
+            <p class="text-4xl font-bold text-gray-900 leading-tight">{{ total_clientes }}</p>
         </div>
-        <div class="stat-card p-5 border border-gray-200 w-full">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="p-2.5 rounded-lg bg-[#B39DDB]">
-                        <i class="fas fa-dollar-sign text-purple-800"></i>
-                    </div>
-                    <span class="text-sm text-gray-500">Ingresos</span>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#E8F5E9] flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-green-700 text-lg"></i>
                 </div>
-                <span class="text-sm font-bold text-gray-900 truncate max-w-[80px]">{{ total_facturado|format_cop_co }}</span>
+                <span class="text-base font-semibold text-gray-500">Ingresos</span>
             </div>
+            <p class="text-3xl font-bold text-gray-900 leading-tight">{{ total_facturado|format_cop_co }}</p>
         </div>
-        <div class="stat-card p-5 border border-gray-200 w-full">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="p-2.5 rounded-lg bg-[#FFE0B2]">
-                        <i class="fas fa-clock text-orange-700"></i>
-                    </div>
-                    <span class="text-sm text-gray-500">Pendiente</span>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#E3F2FD] flex items-center justify-center">
+                    <i class="fas fa-clock text-blue-700 text-lg"></i>
                 </div>
-                <span class="text-sm font-bold text-gray-900 truncate max-w-[80px]">{{ total_pendiente|format_cop_co }}</span>
+                <span class="text-base font-semibold text-gray-500">Pendiente</span>
             </div>
+            <p class="text-3xl font-bold text-gray-900 leading-tight">{{ total_pendiente|format_cop_co }}</p>
         </div>
-        <div class="stat-card p-5 border border-gray-200 w-full">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="p-2.5 rounded-lg bg-[#E6FF00]">
-                        <i class="fas fa-check-circle text-green-800"></i>
-                    </div>
-                    <span class="text-sm text-gray-500">Cobrado</span>
+        <div class="stat-card rounded-[2rem] p-6 w-full">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-[#FFF3E0] flex items-center justify-center">
+                    <i class="fas fa-check-circle text-orange-700 text-lg"></i>
                 </div>
-                <span class="text-sm font-bold text-gray-900 truncate max-w-[80px]">{{ total_pagado|format_cop_co }}</span>
+                <span class="text-base font-semibold text-gray-500">Cobrado</span>
             </div>
+            <p class="text-3xl font-bold text-gray-900 leading-tight">{{ total_pagado|format_cop_co }}</p>
         </div>
     </div>
 
