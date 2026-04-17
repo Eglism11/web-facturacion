@@ -7,7 +7,6 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,16 +32,11 @@
                             800: '#065f46',
                             900: '#064e3b',
                         },
-                        slate: {
-                            850: '#1a2332',
-                            950: '#0f172a',
-                        }
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.5s ease-out',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'slide-down': 'slideDown 0.3s ease-out',
-                        'scale-in': 'scaleIn 0.3s ease-out',
                     },
                     keyframes: {
                         fadeIn: {
@@ -57,10 +51,6 @@
                             '0%': { opacity: '0', transform: 'translateY(-10px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
-                        scaleIn: {
-                            '0%': { opacity: '0', transform: 'scale(0.95)' },
-                            '100%': { opacity: '1', transform: 'scale(1)' },
-                        },
                     },
                 }
             }
@@ -68,8 +58,6 @@
     </script>
 
     <style>
-        [x-cloak] { display: none !important; }
-        
         body {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             min-height: 100vh;
@@ -88,6 +76,49 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
+        .nav-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link.active {
+            color: #ffffff;
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .mobile-nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            transition: all 0.2s;
+        }
+        
+        .mobile-nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .mobile-nav-link.logout {
+            color: #f87171;
+        }
+        
+        .mobile-nav-link.logout:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        
         .stat-card {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -96,10 +127,6 @@
         .stat-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .stat-icon {
-            background: linear-gradient(135deg, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
         }
         
         .btn-primary {
@@ -196,71 +223,76 @@
 <body class="font-sans antialiased text-slate-800">
     {% if current_user.is_authenticated %}
     <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30 group-hover:shadow-primary-500/50 transition-all">
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30">
                             <i class="fas fa-file-invoice-dollar text-white text-lg"></i>
                         </div>
-                        <span class="text-white font-bold text-xl tracking-tight">Facturación</span>
+                        <span class="text-white font-bold text-xl tracking-tight hidden sm:block">Facturación</span>
                     </a>
                 </div>
 
                 <div class="hidden md:flex items-center space-x-1">
-                    <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}nav-link-active{% endif %}">
-                        <i class="fas fa-chart-pie mr-2"></i>Dashboard
+                    <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                        <i class="fas fa-home mr-2"></i>Inicio
                     </a>
-                    <a href="{{ url_for('listar_clientes') }}" class="nav-link {% if 'cliente' in request.endpoint %}nav-link-active{% endif %}">
+                    <a href="{{ url_for('listar_clientes') }}" class="nav-link {% if 'cliente' in request.endpoint %}active{% endif %}">
                         <i class="fas fa-users mr-2"></i>Clientes
                     </a>
-                    <a href="{{ url_for('listar_cuentas') }}" class="nav-link {% if 'cuenta' in request.endpoint and request.endpoint != 'crear_cuenta' %}nav-link-active{% endif %}">
+                    <a href="{{ url_for('listar_cuentas') }}" class="nav-link {% if 'cuenta' in request.endpoint and request.endpoint != 'crear_cuenta' %}active{% endif %}">
                         <i class="fas fa-file-invoice mr-2"></i>Cuentas
                     </a>
-                    <a href="{{ url_for('perfil') }}" class="nav-link {% if request.endpoint == 'perfil' %}nav-link-active{% endif %}">
+                    <a href="{{ url_for('perfil') }}" class="nav-link {% if request.endpoint == 'perfil' %}active{% endif %}">
                         <i class="fas fa-user-circle mr-2"></i>Mi Perfil
                     </a>
                 </div>
 
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-full bg-primary-500/20 flex items-center justify-center">
-                            <i class="fas fa-user text-primary-400 text-sm"></i>
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+                            <i class="fas fa-user text-primary-400 text-xs"></i>
                         </div>
                         <span class="text-slate-300 text-sm font-medium">{{ current_user.username }}</span>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-red-500/20 flex items-center justify-center text-slate-400 hover:text-red-400 transition-all" title="Cerrar sesión">
+                    <a href="{{ url_for('logout') }}" class="nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
 
-                <div class="md:flex items-center">
-                    <input type="checkbox" id="mobile-menu-toggle" class="peer sr-only">
-                    <label for="mobile-menu-toggle" class="hidden md:hidden cursor-pointer w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
-                        <i class="peer-checked:hidden fas fa-bars text-lg"></i>
-                        <i class="hidden peer-checked:block fas fa-times text-lg"></i>
+                <div class="md:hidden flex items-center">
+                    <label for="mobile-menu-toggle" class="cursor-pointer w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-bars text-lg"></i>
                     </label>
                 </div>
             </div>
         </div>
 
-        <div class="hidden peer-checked:block md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl animate-slide-down">
+        <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
+        
+        <div class="hidden peer-checked:block md:hidden border-t border-slate-700/50 bg-slate-900/98 animate-slide-down">
             <div class="px-4 py-3 space-y-1">
                 <a href="{{ url_for('index') }}" class="mobile-nav-link">
-                    <i class="fas fa-chart-pie mr-3"></i>Dashboard
+                    <i class="fas fa-home mr-3 w-5"></i>Inicio
                 </a>
                 <a href="{{ url_for('listar_clientes') }}" class="mobile-nav-link">
-                    <i class="fas fa-users mr-3"></i>Clientes
+                    <i class="fas fa-users mr-3 w-5"></i>Clientes
                 </a>
                 <a href="{{ url_for('listar_cuentas') }}" class="mobile-nav-link">
-                    <i class="fas fa-file-invoice mr-3"></i>Cuentas
+                    <i class="fas fa-file-invoice mr-3 w-5"></i>Cuentas
                 </a>
                 <a href="{{ url_for('perfil') }}" class="mobile-nav-link">
-                    <i class="fas fa-user-circle mr-3"></i>Mi Perfil
+                    <i class="fas fa-user-circle mr-3 w-5"></i>Mi Perfil
                 </a>
-                <a href="{{ url_for('logout') }}" class="mobile-nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                    <i class="fas fa-sign-out-alt mr-3"></i>Salir
-                </a>
+                <div class="border-t border-slate-700 pt-2 mt-2">
+                    <span class="mobile-nav-link text-slate-400 cursor-default">
+                        <i class="fas fa-user mr-3 w-5"></i>{{ current_user.username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="mobile-nav-link logout">
+                        <i class="fas fa-sign-out-alt mr-3 w-5"></i>Salir
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -274,10 +306,7 @@
         {% if messages %}
             <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
                 {% for category, message in messages %}
-                    <div class="glass-card rounded-xl p-4 shadow-xl slide-down {% if category == 'success' %}border-l-4 border-primary-500{% else %}border-l-4 border-red-500{% endif %}"
-                         x-data="{ show: true }" 
-                         x-show="show"
-                         x-init="setTimeout(() => show = false, 5000)">
+                    <div class="glass-card rounded-xl p-4 shadow-xl slide-down {% if category == 'success' %}border-l-4 border-primary-500{% else %}border-l-4 border-red-500{% endif %}">
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0 mt-0.5">
                                 {% if category == 'success' %}
@@ -287,9 +316,6 @@
                                 {% endif %}
                             </div>
                             <p class="text-sm text-slate-700 font-medium">{{ message }}</p>
-                            <button @click="show = false" class="flex-shrink-0 text-slate-400 hover:text-slate-600">
-                                <i class="fas fa-times"></i>
-                            </button>
                         </div>
                     </div>
                 {% endfor %}
@@ -315,18 +341,6 @@
             </div>
         </div>
     </footer>
-
-    <style>
-        .nav-link {
-            @apply px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all;
-        }
-        .nav-link-active {
-            @apply text-white bg-primary-500/20 hover:bg-primary-500/30;
-        }
-        .mobile-nav-link {
-            @apply block px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all;
-        }
-    </style>
 
     {% block extra_js %}{% endblock %}
 </body>
