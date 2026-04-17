@@ -4,19 +4,19 @@
 
 {% block content %}
 <div class="space-y-3 fade-in overflow-x-hidden bg-slate-50 min-h-screen pb-24 pt-4">
-    <div class="flex items-center justify-between px-3">
+    <div class="flex items-center justify-between px-3 py-4">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <i class="fas fa-chart-line text-primary-600"></i>
+            <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                <i class="fas fa-chart-line text-blue-600 text-lg"></i>
             </div>
             <div>
-                <p class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">¡Hola, {{ current_user.nombre_completo or current_user.username }}!</p>
-                <p class="text-xs text-slate-500">Resumen de tu actividad</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Panel de Control</h1>
+                <p class="text-sm text-gray-500 font-medium">Resumen de tu actividad</p>
             </div>
         </div>
     </div>
 
-    <div class="md:hidden grid grid-cols-2 gap-2 px-3">
+    <div class="md:hidden grid grid-cols-2 gap-3 px-3 max-w-screen-xl mx-auto">
         <div class="stat-card rounded-lg p-3 bg-white border border-slate-200 text-center shadow-sm">
             <div class="p-1.5 rounded bg-blue-50 inline-flex mb-1">
                 <i class="fas fa-users text-blue-600 text-xs"></i>
