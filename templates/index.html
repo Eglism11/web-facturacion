@@ -77,14 +77,14 @@
         </div>
     </div>
 
-    <div class="glass-card rounded-xl overflow-hidden slide-up" style="animation-delay: 0.4s;">
-        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+    <div class="bg-slate-50 rounded-xl overflow-hidden slide-up border border-slate-200" style="animation-delay: 0.4s;">
+        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-                    <i class="fas fa-file-invoice text-primary-600 text-xs"></i>
+                <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-slate-700 text-xs"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-semibold text-slate-900">Cuentas Recientes</h3>
+                    <h3 class="text-sm font-semibold text-slate-800">Cuentas Recientes</h3>
                 </div>
             </div>
             <a href="{{ url_for('listar_cuentas') }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">
@@ -93,11 +93,11 @@
         </div>
 
         {% if cuentas_recientes %}
-            <div class="block md:hidden space-y-2">
+            <div class="block md:hidden space-y-0">
                 {% for cuenta in cuentas_recientes %}
-                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="block bg-white rounded-xl p-3.5 shadow-sm border border-slate-100 hover:border-slate-200 transition-all cursor-pointer">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="block bg-white p-3.5 border-b border-slate-100 hover:bg-slate-50 transition-all cursor-pointer">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-sm font-medium text-slate-700">{{ cuenta.numero_factura }}</span>
                             {% if cuenta.estado == 'pagado' %}
                                 <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Pagado</span>
                             {% else %}
