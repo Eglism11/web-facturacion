@@ -117,9 +117,9 @@
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-sm font-medium text-gray-700">{{ cuenta.numero_factura }}</span>
                             {% if cuenta.estado == 'pagado' %}
-                                <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">Pagado</span>
+                                <span class="badge px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Pagado</span>
                             {% else %}
-                                <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
+                                <span class="badge px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
                             {% endif %}
                         </div>
                         <div class="mb-2">
@@ -148,9 +148,9 @@
                                     <div class="flex items-center space-x-2">
                                         <span class="text-sm font-semibold text-gray-900">{{ cuenta.numero_factura }}</span>
                                         {% if cuenta.estado == 'pagado' %}
-                                            <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">Pagado</span>
+                                            <span class="badge px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">Pagado</span>
                                         {% else %}
-                                            <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
+                                            <span class="badge px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
                                         {% endif %}
                                     </div>
                                     <p class="text-sm text-gray-500">{{ cuenta.cliente.nombre }}</p>
