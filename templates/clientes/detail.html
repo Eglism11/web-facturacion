@@ -6,12 +6,12 @@
 <div class="space-y-8 fade-in">
     <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div class="slide-up">
-            <a href="{{ url_for('listar_clientes') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 mb-3 font-medium">
+            <a href="{{ url_for('listar_clientes') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-purple-600 mb-3 font-medium">
                 <i class="fas fa-arrow-left mr-2"></i>Volver a clientes
             </a>
             <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
-                    <span class="text-primary-700 font-bold text-2xl">{{ cliente.nombre[0] }}</span>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center flex-shrink-0">
+                    <span class="text-purple-700 font-bold text-2xl">{{ cliente.nombre[0] }}</span>
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{{ cliente.nombre }}</h1>
@@ -36,8 +36,8 @@
         <div class="glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.1s;">
             <div class="px-6 py-5 border-b border-slate-100 bg-gray-50/50">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                        <i class="fas fa-user-circle text-primary-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-user-circle text-purple-600"></i>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900">Información</h3>
                 </div>
@@ -96,12 +96,12 @@
         <div class="lg:col-span-2 glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.2s;">
             <div class="px-6 py-5 border-b border-slate-100 bg-gray-50/50 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                        <i class="fas fa-file-invoice text-primary-600"></i>
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-file-invoice text-purple-600"></i>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900">Historial de Cuentas</h3>
                 </div>
-                <a href="{{ url_for('crear_cuenta') }}" class="text-sm font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center">
+                <a href="{{ url_for('crear_cuenta') }}" class="text-sm font-semibold text-purple-600 hover:text-purple-700 inline-flex items-center">
                     <i class="fas fa-plus mr-2"></i>Nueva cuenta
                 </a>
             </div>
