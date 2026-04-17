@@ -3,7 +3,7 @@
 {% block title %}Dashboard - Facturación{% endblock %}
 
 {% block content %}
-<div class="space-y-3 fade-in overflow-x-hidden bg-slate-50 min-h-screen pb-24 pt-4">
+<div class="space-y-4 fade-in bg-gray-50 pb-24 pt-4">
     <div class="flex items-center justify-between px-3 py-4">
         <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
@@ -56,7 +56,7 @@
                     </div>
                     <span class="text-xs text-slate-500">Clientes</span>
                 </div>
-                <span class="text-base font-semibold text-slate-900">{{ total_clientes }}</span>
+                <span class="text-base font-semibold text-gray-900">{{ total_clientes }}</span>
             </div>
         </div>
         <div class="stat-card rounded-lg p-3 border border-slate-100">
@@ -67,7 +67,7 @@
                     </div>
                     <span class="text-xs text-slate-500">Ingresos</span>
                 </div>
-                <span class="text-base font-semibold text-slate-900">{{ total_facturado|format_cop_co }}</span>
+                <span class="text-base font-semibold text-gray-900">{{ total_facturado|format_cop_co }}</span>
             </div>
         </div>
         <div class="stat-card rounded-lg p-3 border border-slate-100">
@@ -127,7 +127,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-slate-400">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</span>
-                            <span class="text-base font-bold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
+                            <span class="text-base font-bold text-gray-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                         </div>
                     </a>
                 {% endfor %}
@@ -146,7 +146,7 @@
                                 </div>
                                 <div>
                                     <div class="flex items-center space-x-2">
-                                        <span class="text-sm font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                                        <span class="text-sm font-semibold text-gray-900">{{ cuenta.numero_factura }}</span>
                                         {% if cuenta.estado == 'pagado' %}
                                             <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Pagado</span>
                                         {% else %}
@@ -157,7 +157,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-semibold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
+                                <span class="text-sm font-semibold text-gray-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                             </div>
                         </div>
                     </a>
