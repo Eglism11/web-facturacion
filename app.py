@@ -486,18 +486,24 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Convert to grayscale for cleaner result
+        # Convert to grayscale
         gray = img.convert('L')
         
-        # Resize maintaining aspect ratio
-        max_width = 400
-        if gray.width > max_width:
-            ratio = max_width / gray.width
-            new_height = int(gray.height * ratio)
-            gray = gray.resize((max_width, new_height), Image.LANCZOS)
+        # Apply contrast stretch - make whites whiter, blacks blacker
+        gray = ImageOps.autocontrast(gray, cutoff=5)
         
-        # Convert back to RGB for PNG
-        result = gray.convert('RGB')
+        # Invert so signature becomes white on black
+        inverted = ImageOps.invert(gray)
+        
+        # Resize maintaining aspect
+        max_width = 350
+        if inverted.width > max_width:
+            ratio = max_width / inverted.width
+            new_height = int(inverted.height * ratio)
+            inverted = inverted.resize((max_width, new_height), Image.LANCZOS)
+        
+        # Convert to RGBA - black background with white signature
+        result = inverted.convert('RGBA')
         
         output = io.BytesIO()
         result.save(output, format='PNG')
@@ -505,7 +511,7 @@ def subir_firma_procesada():
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Grayscale resize, saved: {len(base64_result)} chars")
+        print(f"[FIRMA_UPLOAD] Processed: {len(base64_result)} chars")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
