@@ -10,40 +10,40 @@
                 <i class="fas fa-chart-line text-primary-600"></i>
             </div>
             <div>
-                <p class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">¡Hola, {{ current_user.nombre_completo or current_user.username }}!</p>
+                <p class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">¡Hola, {{ current_user.nombre_completo or current_user.username }}!</p>
                 <p class="text-xs text-slate-500">Resumen de tu actividad</p>
             </div>
         </div>
     </div>
 
     <div class="md:hidden grid grid-cols-2 gap-2 px-3">
-        <div class="stat-card rounded-lg p-3 bg-slate-100 text-center">
+        <div class="stat-card rounded-lg p-3 bg-white border border-slate-200 text-center shadow-sm">
             <div class="p-1.5 rounded bg-blue-50 inline-flex mb-1">
                 <i class="fas fa-users text-blue-600 text-xs"></i>
             </div>
-            <p class="text-base font-bold text-slate-900">{{ total_clientes }}</p>
-            <p class="text-xs text-slate-500">Clientes</p>
+            <p class="text-base font-bold text-gray-900">{{ total_clientes }}</p>
+            <p class="text-xs text-gray-500">Clientes</p>
         </div>
-        <div class="stat-card rounded-lg p-3 border bg-slate-100 text-center">
+        <div class="stat-card rounded-lg p-3 bg-white border border-slate-200 text-center shadow-sm">
             <div class="p-1.5 rounded bg-primary-50 inline-flex mb-1">
                 <i class="fas fa-dollar-sign text-primary-600 text-xs"></i>
             </div>
-            <p class="text-sm font-bold text-slate-900">{{ total_facturado|format_cop_short }}</p>
-            <p class="text-xs text-slate-500">Ingresos</p>
+            <p class="text-sm font-bold text-gray-900">{{ total_facturado|format_cop_short }}</p>
+            <p class="text-xs text-gray-500">Ingresos</p>
         </div>
-        <div class="stat-card rounded-lg p-3 border bg-slate-100 text-center">
+        <div class="stat-card rounded-lg p-3 bg-white border border-slate-200 text-center shadow-sm">
             <div class="p-1.5 rounded bg-amber-50 inline-flex mb-1">
                 <i class="fas fa-clock text-amber-600 text-xs"></i>
             </div>
             <p class="text-sm font-bold text-amber-600">{{ total_pendiente|format_cop_short }}</p>
-            <p class="text-xs text-slate-500">Pendiente</p>
+            <p class="text-xs text-gray-500">Pendiente</p>
         </div>
-        <div class="stat-card rounded-lg p-3 border bg-slate-100 text-center">
+        <div class="stat-card rounded-lg p-3 bg-white border border-slate-200 text-center shadow-sm">
             <div class="p-1.5 rounded bg-emerald-50 inline-flex mb-1">
                 <i class="fas fa-check-circle text-emerald-600 text-xs"></i>
             </div>
             <p class="text-sm font-bold text-emerald-600">{{ total_pagado|format_cop_short }}</p>
-            <p class="text-xs text-slate-500">Cobrado</p>
+            <p class="text-xs text-gray-500">Cobrado</p>
         </div>
     </div>
 
