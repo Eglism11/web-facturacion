@@ -221,11 +221,7 @@ def ensure_schema_updates():
             """)
     else:
         firma_columns = {col['name'] for col in inspector.get_columns('firmas')}
-        if 'archivo' in firma_columns:
-            col = inspector.get_columns('firmas')
-            archivo_col = next((c for c in col if c['name'] == 'archivo'), None)
-            if archivo_col and archivo_col['type'] and 'varchar' in str(archivo_col['type']).lower():
-                statements.append("ALTER TABLE firmas ALTER COLUMN archivo TYPE TEXT")
+        # Skip ALTER for SQLite
 
     if 'cuentas' in tables:
         cuenta_columns = {col['name'] for col in inspector.get_columns('cuentas')}
@@ -246,8 +242,7 @@ def ensure_schema_updates():
             
         cuenta_col = inspector.get_columns('cuentas')
         monto_col = next((c for c in cuenta_col if c['name'] == 'monto'), None)
-        if monto_col and monto_col['type'] and 'numeric' in str(monto_col['type']).lower():
-            statements.append("ALTER TABLE cuentas ALTER COLUMN monto TYPE NUMERIC(15,2)")
+        # Skip SQLite ALTER COLUMN migration
 
     if statements:
         print(f"[SCHEMA] Running {len(statements)} migrations...")
@@ -261,29 +256,7 @@ def ensure_schema_updates():
                 except Exception as e:
                     print(f"[SCHEMA] Skip/Error: {e}")
 
-    if 'cuentas' in tables:
-        cuenta_columns = {col['name'] for col in inspector.get_columns('cuentas')}
-        if 'fecha_documento' not in cuenta_columns:
-            if db.engine.dialect.name == 'sqlite':
-                statements.append("ALTER TABLE cuentas ADD COLUMN fecha_documento DATE")
-                statements.append("UPDATE cuentas SET fecha_documento = DATE(created_at) WHERE fecha_documento IS NULL")
-            else:
-                statements.append("ALTER TABLE cuentas ADD COLUMN fecha_documento DATE")
-                statements.append("UPDATE cuentas SET fecha_documento = DATE(created_at) WHERE fecha_documento IS NULL")
-                statements.append("ALTER TABLE cuentas ALTER COLUMN fecha_documento SET NOT NULL")
-
-        if 'firma_id' not in cuenta_columns:
-            statements.append("ALTER TABLE cuentas ADD COLUMN firma_id INTEGER REFERENCES firmas(id)")
-
-        if 'numero_cuenta_pago' not in cuenta_columns:
-            statements.append("ALTER TABLE cuentas ADD COLUMN numero_cuenta_pago VARCHAR(120)")
-
-    if statements:
-        with db.engine.begin() as connection:
-            for stmt in statements:
-                connection.execute(text(stmt))
-
-# Create tables on startup (for development)
+    # Create tables on startup (for development)
 with app.app_context():
     db.create_all()
     ensure_schema_updates()
@@ -902,8 +875,12 @@ def descargar_pdf(id):
     pdf.ln(5)
 
     prestador_nombre = current_user.nombre_completo if current_user.is_authenticated else ''
+    if not prestador_nombre:
+        prestador_nombre = os.environ.get('PRESTADOR_NOMBRE', '')
     prestador_doc = current_user.cedula if current_user.is_authenticated else ''
     prestador_banco = current_user.banco if current_user.is_authenticated else ''
+    if not prestador_banco:
+        prestador_banco = os.environ.get('PAGO_BANCO', '')
     
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'DEBE A:', ln=True)
@@ -1015,4 +992,5 @@ def descargar_pdf(id):
                      as_attachment=True, download_name=filename)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=False)
