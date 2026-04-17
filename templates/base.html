@@ -176,6 +176,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slide-down {
+            animation: slideDown 0.2s ease-out;
+        }
+        
         .stagger-1 { animation-delay: 0.1s; }
         .stagger-2 { animation-delay: 0.2s; }
         .stagger-3 { animation-delay: 0.3s; }
@@ -225,22 +234,17 @@
                     </a>
                 </div>
 
-                <div class="md:hidden flex items-center">
-                    <button @click="mobileMenu = !mobileMenu" class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
-                        <i class="fas fa-bars" x-show="!mobileMenu"></i>
-                        <i class="fas fa-times" x-show="mobileMenu" x-cloak></i>
-                    </button>
+                <div class="md:flex items-center">
+                    <input type="checkbox" id="mobile-menu-toggle" class="peer sr-only">
+                    <label for="mobile-menu-toggle" class="hidden md:hidden cursor-pointer w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
+                        <i class="peer-checked:hidden fas fa-bars text-lg"></i>
+                        <i class="hidden peer-checked:block fas fa-times text-lg"></i>
+                    </label>
                 </div>
             </div>
         </div>
 
-        <div x-data="{ mobileMenu: false }" 
-             x-show="mobileMenu" 
-             x-cloak
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl">
+        <div class="hidden peer-checked:block md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl animate-slide-down">
             <div class="px-4 py-3 space-y-1">
                 <a href="{{ url_for('index') }}" class="mobile-nav-link">
                     <i class="fas fa-chart-pie mr-3"></i>Dashboard
@@ -253,6 +257,9 @@
                 </a>
                 <a href="{{ url_for('perfil') }}" class="mobile-nav-link">
                     <i class="fas fa-user-circle mr-3"></i>Mi Perfil
+                </a>
+                <a href="{{ url_for('logout') }}" class="mobile-nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                    <i class="fas fa-sign-out-alt mr-3"></i>Salir
                 </a>
             </div>
         </div>
