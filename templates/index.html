@@ -6,7 +6,7 @@
 <div class="space-y-4 fade-in bg-white pb-24 pt-4">
     <div class="flex items-center justify-between px-3 py-4">
         <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+            <div class="w-11 h-11 bg-blue-50 flex items-center justify-center">
                 <i class="fas fa-chart-line text-blue-600 text-lg"></i>
             </div>
             <div>
@@ -17,29 +17,29 @@
     </div>
 
     <div class="md:hidden grid grid-cols-2 gap-3 px-3">
-        <div class="stat-card rounded-xl p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2 rounded-lg bg-blue-50 inline-flex mb-2">
+        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
+            <div class="p-2 bg-blue-50 inline-flex mb-2">
                 <i class="fas fa-users text-blue-600 text-sm"></i>
             </div>
             <p class="text-base font-bold text-gray-900 break-all">{{ total_clientes }}</p>
             <p class="text-xs text-gray-500">Clientes</p>
         </div>
-        <div class="stat-card rounded-xl p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2 rounded-lg bg-green-50 inline-flex mb-2">
+        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
+            <div class="p-2 bg-green-50 inline-flex mb-2">
                 <i class="fas fa-dollar-sign text-green-600 text-sm"></i>
             </div>
             <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_facturado|format_cop_short }}</p>
             <p class="text-xs text-gray-500">Ingresos</p>
         </div>
-        <div class="stat-card rounded-xl p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2 rounded-lg bg-amber-50 inline-flex mb-2">
+        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
+            <div class="p-2 bg-amber-50 inline-flex mb-2">
                 <i class="fas fa-clock text-amber-600 text-sm"></i>
             </div>
             <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_pendiente|format_cop_short }}</p>
             <p class="text-xs text-gray-500">Pendiente</p>
         </div>
-        <div class="stat-card rounded-xl p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
-            <div class="p-2 rounded-lg bg-emerald-50 inline-flex mb-2">
+        <div class="stat-card p-5 bg-white border border-gray-200 text-center shadow-sm w-full">
+            <div class="p-2 bg-emerald-50 inline-flex mb-2">
                 <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
             </div>
             <p class="text-sm font-bold text-gray-900 break-all leading-tight">{{ total_pagado|format_cop_short }}</p>
@@ -48,10 +48,10 @@
     </div>
 
 <div class="hidden md:grid grid-cols-4 gap-4">
-        <div class="stat-card rounded-xl p-5 border border-gray-200 w-full">
+        <div class="stat-card p-5 border border-gray-200 w-full">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 rounded-lg bg-blue-50">
+                    <div class="p-2 bg-blue-50">
                         <i class="fas fa-users text-blue-600"></i>
                     </div>
                     <span class="text-sm text-gray-500">Clientes</span>
@@ -59,10 +59,10 @@
                 <span class="text-base font-bold text-gray-900 truncate max-w-[80px]">{{ total_clientes }}</span>
             </div>
         </div>
-        <div class="stat-card rounded-xl p-5 border border-gray-200 w-full">
+        <div class="stat-card p-5 border border-gray-200 w-full">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 rounded-lg bg-green-50">
+                    <div class="p-2 bg-green-50">
                         <i class="fas fa-dollar-sign text-green-600"></i>
                     </div>
                     <span class="text-sm text-gray-500">Ingresos</span>
@@ -70,10 +70,10 @@
                 <span class="text-sm font-bold text-gray-900 truncate max-w-[80px]">{{ total_facturado|format_cop_co }}</span>
             </div>
         </div>
-        <div class="stat-card rounded-xl p-5 border border-gray-200 w-full">
+        <div class="stat-card p-5 border border-gray-200 w-full">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 rounded-lg bg-amber-50">
+                    <div class="p-2 bg-amber-50">
                         <i class="fas fa-clock text-amber-600"></i>
                     </div>
                     <span class="text-sm text-gray-500">Pendiente</span>
@@ -81,10 +81,10 @@
                 <span class="text-sm font-bold text-gray-900 truncate max-w-[80px]">{{ total_pendiente|format_cop_co }}</span>
             </div>
         </div>
-        <div class="stat-card rounded-xl p-5 border border-gray-200 w-full">
+        <div class="stat-card p-5 border border-gray-200 w-full">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 rounded-lg bg-emerald-50">
+                    <div class="p-2 bg-emerald-50">
                         <i class="fas fa-check-circle text-emerald-600"></i>
                     </div>
                     <span class="text-sm text-gray-500">Cobrado</span>
@@ -95,10 +95,10 @@
     </div>
 
     <div class="mt-6">
-    <div class="bg-white rounded-xl slide-up border border-gray-200 shadow-sm" style="animation-delay: 0.4s;">
+    <div class="bg-white slide-up border border-gray-200 shadow-sm" style="animation-delay: 0.4s;">
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                <div class="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center">
                     <i class="fas fa-file-invoice text-gray-700 text-xs"></i>
                 </div>
                 <div>
@@ -137,7 +137,7 @@
                     <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="group block px-4 py-3 hover:bg-gray-50 transition-all duration-200 cursor-pointer">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-lg {% if cuenta.estado == 'pagado' %}bg-green-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
+                                <div class="w-8 h-8 {% if cuenta.estado == 'pagado' %}bg-green-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
                                     {% if cuenta.estado == 'pagado' %}
                                         <i class="fas fa-check-circle text-green-600 text-sm"></i>
                                     {% else %}
@@ -165,12 +165,12 @@
             </div>
         {% else %}
             <div class="px-5 py-12 text-center">
-                <div class="w-14 h-14 rounded-lg bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                <div class="w-14 h-14 bg-gray-50 flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-file-invoice text-gray-300 text-xl"></i>
                 </div>
                 <h4 class="text-base font-medium text-gray-700 mb-1">No hay cuentas</h4>
                 <p class="text-sm text-gray-500 mb-5">Crea tu primera cuenta de cobro</p>
-                <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-4 py-2 rounded-lg text-white font-medium text-sm">
+                <a href="{{ url_for('crear_cuenta') }}" class="btn-primary inline-flex items-center px-4 py-2 text-white font-medium text-sm">
                     <i class="fas fa-plus mr-1.5"></i>Crear cuenta
                 </a>
             </div>

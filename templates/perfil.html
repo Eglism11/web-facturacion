@@ -25,7 +25,7 @@
         <div class="lg:col-span-2 space-y-6">
             <div class="glass-card rounded-2xl p-6 slide-up">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
+                    <div class="w-10 h-10 bg-primary-100 flex items-center justify-center">
                         <i class="fas fa-user-circle text-primary-600"></i>
                     </div>
                     <div>
@@ -45,7 +45,7 @@
                                     <i class="fas fa-id-card text-gray-400"></i>
                                 </div>
                                 <input type="text" name="nombre_completo" id="nombre_completo" value="{{ usuario.nombre_completo or '' }}"
-                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 text-gray-900 placeholder-slate-400"
+                                       class="input-field w-full pl-12 pr-4 py-3 bg-gray-50 text-gray-900 placeholder-slate-400"
                                        placeholder="Juan Pérez">
                             </div>
                         </div>
@@ -59,14 +59,14 @@
                                     <i class="fas fa-passport text-gray-400"></i>
                                 </div>
                                 <input type="text" name="cedula" id="cedula" value="{{ usuario.cedula or '' }}"
-                                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 text-gray-900 placeholder-slate-400"
+                                       class="input-field w-full pl-12 pr-4 py-3 bg-gray-50 text-gray-900 placeholder-slate-400"
                                        placeholder="1234567890">
                             </div>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                        <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm">
                             <i class="fas fa-save mr-2"></i>Guardar Cambios
                         </button>
                     </div>
@@ -76,7 +76,7 @@
             <div class="glass-card rounded-2xl p-6 slide-up" style="animation-delay: 0.1s;">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <div class="w-10 h-10 bg-blue-100 flex items-center justify-center">
                             <i class="fas fa-university text-blue-600"></i>
                         </div>
                         <div>
@@ -89,9 +89,9 @@
                 {% if cuentas_bancarias %}
                     <div class="space-y-3 mb-5">
                         {% for cuenta in cuentas_bancarias %}
-                            <div class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-primary-300 transition-colors {% if cuenta.es_principal %}bg-primary-50 border-primary-200{% endif %}">
+                            <div class="flex items-center justify-between p-4 border border-slate-200 hover:border-primary-300 transition-colors {% if cuenta.es_principal %}bg-primary-50 border-primary-200{% endif %}">
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 rounded-xl {% if cuenta.es_principal %}bg-primary-100{% else %}bg-gray-100{% endif %} flex items-center justify-center">
+                                    <div class="w-12 h-12 {% if cuenta.es_principal %}bg-primary-100{% else %}bg-gray-100{% endif %} flex items-center justify-center">
                                         <i class="fas fa-university {% if cuenta.es_principal %}text-primary-600{% else %}text-gray-500{% endif %}"></i>
                                     </div>
                                     <div>
@@ -105,13 +105,13 @@
                                 <div class="flex items-center space-x-2">
                                     {% if not cuenta.es_principal %}
                                         <form method="POST" action="{{ url_for('set_cuenta_principal', id=cuenta.id) }}">
-                                            <button type="submit" class="text-sm text-primary-600 hover:text-primary-700 font-medium px-3 py-1.5 rounded-lg hover:bg-primary-50 transition-colors">
+                                            <button type="submit" class="text-sm text-primary-600 hover:text-primary-700 font-medium px-3 py-1.5 hover:bg-primary-50 transition-colors">
                                                 Hacer principal
                                             </button>
                                         </form>
                                     {% endif %}
                                     <form method="POST" action="{{ url_for('eliminar_cuenta_bancaria', id=cuenta.id) }}">
-                                        <button type="submit" class="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                                        <button type="submit" class="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 hover:bg-red-50 transition-colors">
                                             Eliminar
                                         </button>
                                     </form>
@@ -127,18 +127,18 @@
                         <i class="fas fa-minus mr-2 hidden group-open:block"></i>
                         Agregar nueva cuenta bancaria
                     </summary>
-                    <form method="POST" action="{{ url_for('agregar_cuenta_bancaria') }}" class="mt-4 p-5 bg-gray-50 rounded-xl space-y-4">
+                    <form method="POST" action="{{ url_for('agregar_cuenta_bancaria') }}" class="mt-4 p-5 bg-gray-50 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <label for="nombre_banco" class="block text-sm font-medium text-gray-700">Banco</label>
                                 <input type="text" name="nombre_banco" id="nombre_banco" required
-                                       class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900 placeholder-slate-400"
+                                       class="input-field w-full px-4 py-3 bg-white text-gray-900 placeholder-slate-400"
                                        placeholder="Nequi, Banco de Bogotá...">
                             </div>
                             <div class="space-y-2">
                                 <label for="tipo_cuenta" class="block text-sm font-medium text-gray-700">Tipo</label>
                                 <select name="tipo_cuenta" id="tipo_cuenta" required
-                                        class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900">
+                                        class="input-field w-full px-4 py-3 bg-white text-gray-900">
                                     <option value="Ahorros">Ahorros</option>
                                     <option value="Corriente">Corriente</option>
                                     <option value="Nequi">Nequi</option>
@@ -150,10 +150,10 @@
                         <div class="space-y-2">
                             <label for="nueva_cuenta_numero" class="block text-sm font-medium text-gray-700">Número de Cuenta</label>
                             <input type="text" name="numero_cuenta" id="nueva_cuenta_numero" required
-                                   class="input-field w-full px-4 py-3 rounded-xl bg-white text-gray-900 placeholder-slate-400"
+                                   class="input-field w-full px-4 py-3 bg-white text-gray-900 placeholder-slate-400"
                                    placeholder="3001234567">
                         </div>
-                        <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                        <button type="submit" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm">
                             <i class="fas fa-plus mr-2"></i>Agregar Cuenta
                         </button>
                     </form>
@@ -162,7 +162,7 @@
 
             <div class="glass-card rounded-2xl p-6 slide-up" style="animation-delay: 0.2s;">
                 <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <div class="w-10 h-10 bg-purple-100 flex items-center justify-center">
                         <i class="fas fa-signature text-purple-600"></i>
                     </div>
                     <div>
@@ -172,22 +172,22 @@
                 </div>
                 
                 {% if firma_actual %}
-                    <div class="mb-5 p-4 rounded-xl bg-gray-50 border border-slate-200">
+                    <div class="mb-5 p-4 bg-gray-50 border border-slate-200">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-4">
-                                <img src="{{ firma_actual }}" alt="Firma actual" class="h-20 object-contain bg-white p-2 rounded-lg border shadow-sm">
+                                <img src="{{ firma_actual }}" alt="Firma actual" class="h-20 object-contain bg-white p-2 border shadow-sm">
                                 <div>
                                     <p class="font-medium text-gray-900">Firma registrada</p>
                                     <p class="text-sm text-gray-500">Visible en tus facturas</p>
                                 </div>
                             </div>
-                            <button type="button" id="delete-firma-btn" class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                            <button type="button" id="delete-firma-btn" class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1.5 hover:bg-red-50 transition-colors">
                                 <i class="fas fa-trash mr-1"></i>Eliminar
                             </button>
                         </div>
                     </div>
                 {% else %}
-                    <div class="mb-5 p-8 border-2 border-dashed border-slate-300 rounded-xl text-center bg-gray-50">
+                    <div class="mb-5 p-8 border-2 border-dashed border-slate-300 text-center bg-gray-50">
                         <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-signature text-gray-400 text-2xl"></i>
                         </div>
@@ -200,7 +200,7 @@
                     <div class="flex items-center space-x-4">
                         <input type="file" id="firma-imagen" accept="image/*" 
                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors cursor-pointer">
-                        <button type="button" id="upload-firma-btn" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm whitespace-nowrap">
+                        <button type="button" id="upload-firma-btn" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm whitespace-nowrap">
                             <i class="fas fa-upload mr-2"></i>
                             {% if firma_actual %}Actualizar{% else %}Subir{% endif %}
                         </button>
@@ -212,25 +212,25 @@
         <div class="lg:col-span-1">
             <div class="glass-card rounded-2xl p-6 sticky top-24 slide-up" style="animation-delay: 0.3s;">
                 <div class="flex items-center space-x-3 mb-5">
-                    <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <div class="w-10 h-10 bg-amber-100 flex items-center justify-center">
                         <i class="fas fa-lightbulb text-amber-600"></i>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900">Tips</h3>
                 </div>
                 <div class="space-y-4">
-                    <div class="p-4 rounded-xl bg-blue-50 border border-blue-100">
+                    <div class="p-4 bg-blue-50 border border-blue-100">
                         <p class="text-sm text-blue-800 font-medium">
                             <i class="fas fa-info-circle mr-1"></i>
                             Mantén tus datos actualizados para que aparezcan correctamente en tus facturas PDF.
                         </p>
                     </div>
-                    <div class="p-4 rounded-xl bg-primary-50 border border-primary-100">
+                    <div class="p-4 bg-primary-50 border border-primary-100">
                         <p class="text-sm text-primary-800 font-medium">
                             <i class="fas fa-check-circle mr-1"></i>
                             Agrega tu firma digital para dar un toque profesional a tus documentos.
                         </p>
                     </div>
-                    <div class="p-4 rounded-xl bg-purple-50 border border-purple-100">
+                    <div class="p-4 bg-purple-50 border border-purple-100">
                         <p class="text-sm text-purple-800 font-medium">
                             <i class="fas fa-star mr-1"></i>
                             Marca una cuenta bancaria como principal para que aparezca por defecto.

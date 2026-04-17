@@ -7,7 +7,7 @@
     <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div class="slide-up">
             <div class="flex items-center space-x-3 mb-2">
-                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                <div class="w-11 h-11 bg-blue-50 flex items-center justify-center">
                     <i class="fas fa-users text-blue-600 text-lg"></i>
                 </div>
                 <div>
@@ -18,28 +18,28 @@
         </div>
         
         <div class="slide-up stagger-1">
-            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-lg">
+            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm shadow-lg">
                 <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
             </a>
         </div>
     </div>
 
-    <div class="glass-card rounded-xl p-4 slide-up max-w-7xl mx-auto" style="animation-delay: 0.1s;">
+    <div class="glass-card p-4 slide-up max-w-7xl mx-auto" style="animation-delay: 0.1s;">
         <form method="GET" action="{{ url_for('listar_clientes') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
                 <input type="text" name="q" value="{{ search }}" 
-                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-slate-200 text-gray-900 placeholder-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                       class="input-field w-full pl-12 pr-4 py-3 bg-white border border-slate-200 text-gray-900 placeholder-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                        placeholder="Buscar por nombre o email...">
             </div>
             <div class="flex items-center gap-3">
-                <button type="submit" class="btn-primary inline-flex items-center px-5 py-3 rounded-xl text-white font-semibold text-sm">
+                <button type="submit" class="btn-primary inline-flex items-center px-5 py-3 text-white font-semibold text-sm">
                     <i class="fas fa-search mr-2"></i>Buscar
                 </button>
                 {% if search %}
-                    <a href="{{ url_for('listar_clientes') }}" class="btn-secondary inline-flex items-center px-5 py-3 rounded-xl text-gray-700 font-medium text-sm">
+                    <a href="{{ url_for('listar_clientes') }}" class="btn-secondary inline-flex items-center px-5 py-3 text-gray-700 font-medium text-sm">
                         <i class="fas fa-times mr-2"></i>Limpiar
                     </a>
                 {% endif %}
@@ -64,7 +64,7 @@
                             <tr class="table-row">
                                 <td class="px-4 py-4">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+                                        <div class="w-9 h-9 bg-primary-50 flex items-center justify-center flex-shrink-0">
                                             <span class="text-primary-700 font-semibold text-base">{{ cliente.nombre[0] }}</span>
                                         </div>
                                         <div class="min-w-0">
@@ -88,20 +88,20 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-sm text-gray-500 font-mono bg-gray-100 px-2.5 py-1 rounded-lg">
+                                    <span class="text-sm text-gray-500 font-mono bg-gray-100 px-2.5 py-1">
                                         {{ cliente.identificacion or '—' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end space-x-2">
-                                        <a href="{{ url_for('ver_cliente', id=cliente.id) }}" class="p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors" title="Ver">
+                                        <a href="{{ url_for('ver_cliente', id=cliente.id) }}" class="p-2 bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors" title="Ver">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Editar">
+                                        <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form method="POST" action="{{ url_for('eliminar_cliente', id=cliente.id) }}" class="inline" onsubmit="return confirm('¿Eliminar cliente {{ cliente.nombre }}?')">
-                                            <button type="submit" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Eliminar">
+                                            <button type="submit" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Eliminar">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -120,12 +120,12 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         {% if clientes.has_prev %}
-                            <a href="{{ url_for('listar_clientes', page=clientes.prev_num, q=search) }}" class="btn-secondary inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium">
+                            <a href="{{ url_for('listar_clientes', page=clientes.prev_num, q=search) }}" class="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium">
                                 <i class="fas fa-chevron-left mr-2"></i>Anterior
                             </a>
                         {% endif %}
                         {% if clientes.has_next %}
-                            <a href="{{ url_for('listar_clientes', page=clientes.next_num, q=search) }}" class="btn-primary inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium text-white">
+                            <a href="{{ url_for('listar_clientes', page=clientes.next_num, q=search) }}" class="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium text-white">
                                 Siguiente<i class="fas fa-chevron-right ml-2"></i>
                             </a>
                         {% endif %}
@@ -145,7 +145,7 @@
                     {% if search %}Intenta con otro término de búsqueda{% else %}Comienza agregando tu primer cliente{% endif %}
                 </p>
                 {% if not search %}
-                    <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm">
+                    <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 text-white font-semibold text-sm">
                         <i class="fas fa-user-plus mr-2"></i>Agregar cliente
                     </a>
                 {% endif %}
