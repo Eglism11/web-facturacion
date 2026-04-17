@@ -250,17 +250,11 @@
                     </a>
                 </div>
 
-                <div class="md:hidden flex items-center">
-                    <label for="mobile-menu-toggle" class="cursor-pointer w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
-                        <i class="fas fa-bars text-lg"></i>
-                    </label>
-                </div>
+                
             </div>
         </div>
 
-        <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
-
-        <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg">
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-slate-200 shadow-lg">
             <div class="flex justify-around items-center py-2">
                 <a href="{{ url_for('index') }}" class="flex flex-col items-center {% if request.endpoint == 'index' or request.endpoint == None %}text-primary-600{% else %}text-slate-400{% endif %}">
                     <i class="fas fa-home text-lg"></i>
