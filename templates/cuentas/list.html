@@ -7,8 +7,8 @@
     <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div class="slide-up">
             <div class="flex items-center space-x-3 mb-2">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
-                    <i class="fas fa-file-invoice text-white text-xl"></i>
+                <div class="w-11 h-11 rounded-xl bg-primary-50 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-primary-600 text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Cuentas de Cobro</h1>
@@ -44,51 +44,51 @@
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
-                        <tr class="bg-slate-50/50 border-b border-slate-100">
-                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Factura</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Concepto</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
-                            <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Monto</th>
-                            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
+                        <tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500">Factura</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 hidden sm:table-cell">Cliente</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500 hidden md:table-cell">Concepto</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-slate-500">Fecha</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-slate-500">Estado</th>
+                            <th class="px-3 py-3 text-right text-xs font-medium text-slate-500">Monto</th>
+                            <th class="px-3 py-3 text-right text-xs font-medium text-slate-500">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         {% for cuenta in cuentas.items %}
                             <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 rounded-lg {% if cuenta.estado == 'pagado' %}bg-emerald-100{% else %}bg-amber-100{% endif %} flex items-center justify-center">
+                                <td class="px-3 py-3">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-8 h-8 rounded-lg {% if cuenta.estado == 'pagado' %}bg-emerald-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
                                             {% if cuenta.estado == 'pagado' %}
-                                                <i class="fas fa-check-circle text-emerald-600"></i>
+                                                <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
                                             {% else %}
-                                                <i class="fas fa-clock text-amber-600"></i>
+                                                <i class="fas fa-clock text-amber-600 text-sm"></i>
                                             {% endif %}
                                         </div>
-                                        <span class="font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                                        <span class="font-medium text-slate-900 text-sm">{{ cuenta.numero_factura }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="font-medium text-primary-600 hover:text-primary-700">
+                                <td class="px-3 py-3 hidden sm:table-cell">
+                                    <a href="{{ url_for('ver_cliente', id=cuenta.cliente_id) }}" class="font-medium text-primary-600 hover:text-primary-700 text-sm">
                                         {{ cuenta.cliente.nombre }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-sm text-slate-600 max-w-xs truncate block">{{ cuenta.concepto[:45] }}{% if cuenta.concepto|length > 45 %}...{% endif %}</span>
+                                <td class="px-3 py-3 hidden md:table-cell">
+                                    <span class="text-sm text-slate-600 truncate block">{{ cuenta.concepto[:35] }}{% if cuenta.concepto|length > 35 %}...{% endif %}</span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-sm text-slate-500">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</span>
+                                <td class="px-3 py-3">
+                                    <span class="text-sm text-slate-500">{{ cuenta.fecha_documento.strftime('%d %b') }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-3 py-3 text-center">
                                     {% if cuenta.estado == 'pagado' %}
-                                        <span class="badge px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">Pagado</span>
+                                        <span class="badge px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">Pagado</span>
                                     {% else %}
-                                        <span class="badge px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">Pendiente</span>
+                                        <span class="badge px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">Pendiente</span>
                                     {% endif %}
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    <span class="text-base font-bold text-slate-900">{{ cuenta.monto|format_cop_co }}</span>
+                                <td class="px-3 py-3 text-right">
+                                    <span class="text-sm font-semibold text-slate-900 break-all">{{ cuenta.monto|format_cop_co }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end space-x-2">
