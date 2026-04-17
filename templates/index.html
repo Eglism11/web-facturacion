@@ -17,40 +17,64 @@
     </div>
 
     <div class="md:hidden grid grid-cols-2 gap-3 px-3">
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Clientes</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#F3E5F5]">
+            <div class="w-10 h-10 rounded-lg bg-[#7B1FA2] flex items-center justify-center mb-2">
+                <i class="fas fa-users text-white text-lg"></i>
+            </div>
+            <p class="text-sm font-semibold text-gray-700 mb-1">Clientes</p>
             <p class="text-2xl font-bold text-gray-900">{{ total_clientes }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Ingresos</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#E8F5E9]">
+            <div class="w-10 h-10 rounded-lg bg-[#2E7D32] flex items-center justify-center mb-2">
+                <i class="fas fa-dollar-sign text-white text-lg"></i>
+            </div>
+            <p class="text-sm font-semibold text-gray-700 mb-1">Ingresos</p>
             <p class="text-xl font-bold text-gray-900">{{ total_facturado|format_cop_short }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Pendiente</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#E3F2FD]">
+            <div class="w-10 h-10 rounded-lg bg-[#1565C0] flex items-center justify-center mb-2">
+                <i class="fas fa-clock text-white text-lg"></i>
+            </div>
+            <p class="text-sm font-semibold text-gray-700 mb-1">Pendiente</p>
             <p class="text-xl font-bold text-gray-900">{{ total_pendiente|format_cop_short }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Cobrado</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#FFF3E0]">
+            <div class="w-10 h-10 rounded-lg bg-[#E65100] flex items-center justify-center mb-2">
+                <i class="fas fa-check-circle text-white text-lg"></i>
+            </div>
+            <p class="text-sm font-semibold text-gray-700 mb-1">Cobrado</p>
             <p class="text-xl font-bold text-gray-900">{{ total_pagado|format_cop_short }}</p>
         </div>
     </div>
 
 <div class="hidden md:grid grid-cols-4 gap-4">
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Clientes</p>
-            <p class="text-2xl font-bold text-gray-900">{{ total_clientes }}</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#F3E5F5]">
+            <div class="w-12 h-12 rounded-xl bg-[#7B1FA2] flex items-center justify-center mb-2">
+                <i class="fas fa-users text-white text-xl"></i>
+            </div>
+            <p class="text-base font-semibold text-gray-700 mb-1">Clientes</p>
+            <p class="text-3xl font-bold text-gray-900">{{ total_clientes }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Ingresos</p>
-            <p class="text-xl font-bold text-gray-900">{{ total_facturado|format_cop_co }}</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#E8F5E9]">
+            <div class="w-12 h-12 rounded-xl bg-[#2E7D32] flex items-center justify-center mb-2">
+                <i class="fas fa-dollar-sign text-white text-xl"></i>
+            </div>
+            <p class="text-base font-semibold text-gray-700 mb-1">Ingresos</p>
+            <p class="text-2xl font-bold text-gray-900">{{ total_facturado|format_cop_co }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Pendiente</p>
-            <p class="text-xl font-bold text-gray-900">{{ total_pendiente|format_cop_co }}</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#E3F2FD]">
+            <div class="w-12 h-12 rounded-xl bg-[#1565C0] flex items-center justify-center mb-2">
+                <i class="fas fa-clock text-white text-xl"></i>
+            </div>
+            <p class="text-base font-semibold text-gray-700 mb-1">Pendiente</p>
+            <p class="text-2xl font-bold text-gray-900">{{ total_pendiente|format_cop_co }}</p>
         </div>
-        <div class="stat-card rounded-2xl p-5 w-full">
-            <p class="text-sm font-medium text-gray-500 mb-1">Cobrado</p>
-            <p class="text-xl font-bold text-gray-900">{{ total_pagado|format_cop_co }}</p>
+        <div class="stat-card rounded-[2rem] p-5 w-full bg-[#FFF3E0]">
+            <div class="w-12 h-12 rounded-xl bg-[#E65100] flex items-center justify-center mb-2">
+                <i class="fas fa-check-circle text-white text-xl"></i>
+            </div>
+            <p class="text-base font-semibold text-gray-700 mb-1">Cobrado</p>
+            <p class="text-2xl font-bold text-gray-900">{{ total_pagado|format_cop_co }}</p>
         </div>
     </div>
 
