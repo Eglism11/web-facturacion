@@ -6,7 +6,7 @@
 <div class="space-y-4 fade-in bg-white pb-24 pt-4">
     <div class="flex items-center justify-between px-3 py-4">
         <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-blue-50 flex items-center justify-center">
+            <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
                 <i class="fas fa-chart-line text-blue-600 text-lg"></i>
             </div>
             <div>
@@ -98,7 +98,7 @@
     <div class="bg-white slide-up border border-gray-200 shadow-sm" style="animation-delay: 0.4s;">
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <div class="w-8 h-8 bg-white border border-slate-200 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center">
                     <i class="fas fa-file-invoice text-gray-700 text-xs"></i>
                 </div>
                 <div>
@@ -137,7 +137,7 @@
                     <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="group block px-4 py-3 hover:bg-gray-50 transition-all duration-200 cursor-pointer">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 {% if cuenta.estado == 'pagado' %}bg-green-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-lg {% if cuenta.estado == 'pagado' %}bg-green-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
                                     {% if cuenta.estado == 'pagado' %}
                                         <i class="fas fa-check-circle text-green-600 text-sm"></i>
                                     {% else %}

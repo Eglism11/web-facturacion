@@ -7,7 +7,7 @@
     <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div class="slide-up">
             <div class="flex items-center space-x-3 mb-2">
-                <div class="w-11 h-11 bg-primary-50 flex items-center justify-center">
+                <div class="w-11 h-11 rounded-xl bg-primary-50 flex items-center justify-center">
                     <i class="fas fa-file-invoice text-primary-600 text-lg"></i>
                 </div>
                 <div>
@@ -80,7 +80,7 @@
                             <tr class="table-row">
                                 <td class="px-3 py-3">
                                     <div class="flex items-center space-x-2">
-                                        <div class="w-8 h-8 {% if cuenta.estado == 'pagado' %}bg-emerald-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
+                                        <div class="w-8 h-8 rounded-lg {% if cuenta.estado == 'pagado' %}bg-emerald-50{% else %}bg-amber-50{% endif %} flex items-center justify-center">
                                             {% if cuenta.estado == 'pagado' %}
                                                 <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
                                             {% else %}
