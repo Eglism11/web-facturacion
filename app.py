@@ -153,8 +153,25 @@ def _jinja_format_cop_co(v):
         return ''
     return format_cop_colombia(v)
 
+def _jinja_format_cop_short(v):
+    if v is None:
+        return ''
+    try:
+        val = float(v)
+        if val >= 1_000_000_000:
+            return f"${val/1_000_000_000:.1f}B"
+        elif val >= 1_000_000:
+            return f"${val/1_000_000:.1f}M"
+        elif val >= 1_000:
+            return f"${val/1_000:.0f}K"
+        else:
+            return format_cop_colombia(v)
+    except:
+        return format_cop_colombia(v)
+
 
 app.jinja_env.filters['format_cop_co'] = _jinja_format_cop_co
+app.jinja_env.filters['format_cop_short'] = _jinja_format_cop_short
 
 
 def numero_a_letras(number):

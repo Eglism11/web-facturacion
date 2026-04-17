@@ -259,29 +259,30 @@
         </div>
 
         <input type="checkbox" id="mobile-menu-toggle" class="hidden peer">
-        
-        <div class="hidden peer-checked:block md:hidden fixed inset-0 bottom-auto z-50 bg-slate-900 border-t border-slate-700 animate-slide-down max-h-[80vh] overflow-y-auto">
-            <div class="px-4 py-4 pt-20 space-y-1">
-                <a href="{{ url_for('index') }}" class="mobile-nav-link">
-                    <i class="fas fa-home mr-3 w-5"></i>Inicio
+
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg">
+            <div class="flex justify-around items-center py-2">
+                <a href="{{ url_for('index') }}" class="flex flex-col items-center {% if request.endpoint == 'index' or request.endpoint == None %}text-primary-600{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-xs mt-1">Inicio</span>
                 </a>
-                <a href="{{ url_for('listar_clientes') }}" class="mobile-nav-link">
-                    <i class="fas fa-users mr-3 w-5"></i>Clientes
+                <a href="{{ url_for('listar_clientes') }}" class="flex flex-col items-center {% if request.endpoint == 'listar_clientes' %}text-primary-600{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-users text-lg"></i>
+                    <span class="text-xs mt-1">Clientes</span>
                 </a>
-                <a href="{{ url_for('listar_cuentas') }}" class="mobile-nav-link">
-                    <i class="fas fa-file-invoice mr-3 w-5"></i>Cuentas
+                <a href="{{ url_for('crear_cliente') }}" class="flex flex-col items-center text-primary-600 -mt-3">
+                    <div class="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-plus text-white text-xl"></i>
+                    </div>
                 </a>
-                <a href="{{ url_for('perfil') }}" class="mobile-nav-link">
-                    <i class="fas fa-user-circle mr-3 w-5"></i>Mi Perfil
+                <a href="{{ url_for('listar_cuentas') }}" class="flex flex-col items-center {% if request.endpoint == 'listar_cuentas' %}text-primary-600{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-file-invoice text-lg"></i>
+                    <span class="text-xs mt-1">Cuentas</span>
                 </a>
-                <div class="border-t border-slate-700 pt-2 mt-2">
-                    <span class="mobile-nav-link text-slate-400 cursor-default">
-                        <i class="fas fa-user mr-3 w-5"></i>{{ current_user.username }}
-                    </span>
-                    <a href="{{ url_for('logout') }}" class="mobile-nav-link logout">
-                        <i class="fas fa-sign-out-alt mr-3 w-5"></i>Salir
-                    </a>
-                </div>
+                <a href="{{ url_for('perfil') }}" class="flex flex-col items-center {% if request.endpoint == 'perfil' %}text-primary-600{% else %}text-slate-400{% endif %}">
+                    <i class="fas fa-user text-lg"></i>
+                    <span class="text-xs mt-1">Perfil</span>
+                </a>
             </div>
         </div>
     </nav>

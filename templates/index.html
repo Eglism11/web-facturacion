@@ -3,27 +3,88 @@
 {% block title %}Dashboard - Facturación{% endblock %}
 
 {% block content %}
-<div class="space-y-6 fade-in overflow-x-hidden bg-slate-50 min-h-[calc(100vh-80px)]">
-    <div class="page-header flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-        <div class="slide-up">
-            <div class="flex items-center space-x-3 mb-1">
-                <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
-                    <i class="fas fa-chart-line text-primary-600 text-lg"></i>
+<div class="space-y-4 fade-in overflow-x-hidden bg-slate-50 min-h-screen pb-24">
+    <div class="flex items-center justify-between">
+        <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center ml-3 mt-3">
+            <i class="fas fa-chart-line text-primary-600"></i>
+        </div>
+    </div>
+
+    <div class="md:hidden grid grid-cols-4 gap-2 px-3">
+        <div class="stat-card rounded-lg p-2 border border-slate-100 text-center">
+            <div class="p-1.5 rounded bg-blue-50 inline-flex mb-1">
+                <i class="fas fa-users text-blue-600 text-xs"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-900">{{ total_clientes }}</p>
+            <p class="text-xs text-slate-500">Clientes</p>
+        </div>
+        <div class="stat-card rounded-lg p-2 border border-slate-100 text-center">
+            <div class="p-1.5 rounded bg-primary-50 inline-flex mb-1">
+                <i class="fas fa-dollar-sign text-primary-600 text-xs"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-900">{{ total_facturado|format_cop_short }}</p>
+            <p class="text-xs text-slate-500">Ingresos</p>
+        </div>
+        <div class="stat-card rounded-lg p-2 border border-slate-100 text-center">
+            <div class="p-1.5 rounded bg-amber-50 inline-flex mb-1">
+                <i class="fas fa-clock text-amber-600 text-xs"></i>
+            </div>
+            <p class="text-sm font-bold text-amber-600">{{ total_pendiente|format_cop_short }}</p>
+            <p class="text-xs text-slate-500">Pendiente</p>
+        </div>
+        <div class="stat-card rounded-lg p-2 border border-slate-100 text-center">
+            <div class="p-1.5 rounded bg-emerald-50 inline-flex mb-1">
+                <i class="fas fa-check-circle text-emerald-600 text-xs"></i>
+            </div>
+            <p class="text-sm font-bold text-emerald-600">{{ total_pagado|format_cop_short }}</p>
+            <p class="text-xs text-slate-500">Cobrado</p>
+        </div>
+    </div>
+
+    <div class="hidden md:grid grid-cols-4 gap-3">
+        <div class="stat-card rounded-lg p-3 border border-slate-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 rounded bg-blue-50">
+                        <i class="fas fa-users text-blue-600 text-xs"></i>
+                    </div>
+                    <span class="text-xs text-slate-500">Clientes</span>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">Dashboard</h1>
-                    <p class="text-sm text-slate-500">Resumen de tu actividad</p>
-                </div>
+                <span class="text-base font-semibold text-slate-900">{{ total_clientes }}</span>
             </div>
         </div>
-        
-        <div class="flex flex-wrap gap-3 slide-up stagger-1">
-            <a href="{{ url_for('crear_cliente') }}" class="btn-primary inline-flex items-center px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-lg">
-                <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
-            </a>
-            <a href="{{ url_for('crear_cuenta') }}" class="btn-secondary inline-flex items-center px-5 py-2.5 rounded-xl text-slate-700 font-semibold text-sm">
-                <i class="fas fa-file-invoice mr-2 text-primary-600"></i>Nueva Cuenta
-            </a>
+        <div class="stat-card rounded-lg p-3 border border-slate-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 rounded bg-primary-50">
+                        <i class="fas fa-dollar-sign text-primary-600 text-xs"></i>
+                    </div>
+                    <span class="text-xs text-slate-500">Ingresos</span>
+                </div>
+                <span class="text-base font-semibold text-slate-900">{{ total_facturado|format_cop_co }}</span>
+            </div>
+        </div>
+        <div class="stat-card rounded-lg p-3 border border-slate-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 rounded bg-amber-50">
+                        <i class="fas fa-clock text-amber-600 text-xs"></i>
+                    </div>
+                    <span class="text-xs text-slate-500">Pendiente</span>
+                </div>
+                <span class="text-base font-semibold text-amber-600">{{ total_pendiente|format_cop_co }}</span>
+            </div>
+        </div>
+        <div class="stat-card rounded-lg p-3 border border-slate-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 rounded bg-emerald-50">
+                        <i class="fas fa-check-circle text-emerald-600 text-xs"></i>
+                    </div>
+                    <span class="text-xs text-slate-500">Cobrado</span>
+                </div>
+                <span class="text-base font-semibold text-emerald-600">{{ total_pagado|format_cop_co }}</span>
+            </div>
         </div>
     </div>
 
@@ -72,7 +133,7 @@
                     </div>
                     <span class="text-xs text-slate-500">Cobrado</span>
                 </div>
-                <span class="text-base font-semibold text-emerald-600">{{ total_pagado|format_cop_co }}</span>
+<span class="text-base font-semibold text-emerald-600">{{ total_pagado|format_cop_co }}</span>
             </div>
         </div>
     </div>
