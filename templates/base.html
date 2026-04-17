@@ -73,6 +73,8 @@
         .nav-glass {
             background: #ffffff;
             border-bottom: 1px solid #e5e7eb;
+            height: 4rem;
+            padding: 1rem 0;
         }
 
         .nav-link {
@@ -244,7 +246,7 @@
                         <div class="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
                             <i class="fas fa-user text-primary-400 text-xs"></i>
                         </div>
-                        <span class="text-slate-300 text-sm font-medium">{{ current_user.username }}</span>
+                        <span class="text-gray-300 text-sm font-medium">{{ current_user.username }}</span>
                     </div>
                     <a href="{{ url_for('logout') }}" class="nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
                         <i class="fas fa-sign-out-alt"></i>
@@ -260,7 +262,7 @@
                 <i class="fas fa-home text-xl"></i>
                 <span class="text-[10px] mt-0.5">Inicio</span>
             </a>
-            <a href="{{ url_for('listar_clientes') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'listar_clientes' %}text-primary-600{% else %}text-slate-400{% endif %}">
+            <a href="{{ url_for('listar_clientes') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'listar_clientes' %}text-primary-600{% else %}text-gray-400{% endif %}">
                 <i class="fas fa-users text-xl"></i>
                 <span class="text-[10px] mt-0.5">Clientes</span>
             </a>
@@ -269,11 +271,11 @@
                     <i class="fas fa-plus text-white text-2xl"></i>
                 </div>
             </a>
-            <a href="{{ url_for('listar_cuentas') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'listar_cuentas' %}text-primary-600{% else %}text-slate-400{% endif %}">
+            <a href="{{ url_for('listar_cuentas') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'listar_cuentas' %}text-primary-600{% else %}text-gray-400{% endif %}">
                 <i class="fas fa-file-invoice text-xl"></i>
                 <span class="text-[10px] mt-0.5">Cuentas</span>
             </a>
-            <a href="{{ url_for('perfil') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'perfil' %}text-primary-600{% else %}text-slate-400{% endif %}">
+            <a href="{{ url_for('perfil') }}" class="flex flex-col items-center justify-center flex-1 {% if request.endpoint == 'perfil' %}text-primary-600{% else %}text-gray-400{% endif %}">
                 <i class="fas fa-user text-xl"></i>
                 <span class="text-[10px] mt-0.5">Perfil</span>
             </a>
@@ -298,7 +300,7 @@
                                     <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
                                 {% endif %}
                             </div>
-                            <p class="text-sm text-slate-700 font-medium">{{ message }}</p>
+                            <p class="text-sm text-gray-700 font-medium">{{ message }}</p>
                         </div>
                     </div>
                 {% endfor %}
@@ -317,9 +319,9 @@
                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
                         <i class="fas fa-file-invoice-dollar text-white text-sm"></i>
                     </div>
-                    <span class="text-slate-600 font-medium">Sistema de Facturación</span>
+                    <span class="text-gray-600 font-medium">Sistema de Facturación</span>
                 </div>
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-gray-500">
                     © 2024 Todos los derechos reservados
                 </p>
             </div>
