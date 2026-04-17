@@ -486,32 +486,44 @@ def subir_firma_procesada():
         img = Image.open(file)
         print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
-        # Convert to grayscale
+        # Convert to RGBA
+        if img.mode != 'RGBA':
+            img = img.convert('RGBA')
+        
+        # Create grayscale version
         gray = img.convert('L')
         
-        # Apply contrast stretch - make whites whiter, blacks blacker
-        gray = ImageOps.autocontrast(gray, cutoff=5)
-        
-        # Invert so signature becomes white on black
-        inverted = ImageOps.invert(gray)
-        
         # Resize maintaining aspect
-        max_width = 350
-        if inverted.width > max_width:
-            ratio = max_width / inverted.width
-            new_height = int(inverted.height * ratio)
-            inverted = inverted.resize((max_width, new_height), Image.LANCZOS)
+        max_width = 300
+        if gray.width > max_width:
+            ratio = max_width / gray.width
+            new_height = int(gray.height * ratio)
+            gray = gray.resize((max_width, new_height), Image.Resampling.LANCZOS)
+            img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
         
-        # Convert to RGBA - black background with white signature
-        result = inverted.convert('RGBA')
+        # Create alpha channel from grayscale - white becomes transparent
+        alpha = gray.point(lambda x: 255 - x)
+        
+        # Apply alpha to original
+        img.putalpha(alpha)
+        
+        # Force black signature on transparent background
+        pixels = img.load()
+        w, h = img.size
+        for y in range(h):
+            for x in range(w):
+                r, g, b, a = pixels[x, y]
+                if a > 50:  # If not fully transparent
+                    # Make it pure black
+                    pixels[x, y] = (0, 0, 0, a)
         
         output = io.BytesIO()
-        result.save(output, format='PNG')
+        img.save(output, format='PNG')
         output.seek(0)
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Processed: {len(base64_result)} chars")
+        print(f"[FIRMA_UPLOAD] Black on transparent: {len(base64_result)} chars")
         
         firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
         if not firma:
@@ -943,10 +955,10 @@ def descargar_pdf(id):
         'No responsable de IVA segun art. 437 del ET. Documento equivalente para soporte contable.'
     )
     pdf.multi_cell(0, 6, texto_tributario)
-    pdf.ln(10)
+    pdf.ln(8)
 
-    sig_w_mm = 50
-    sig_h_mm = 15
+    sig_w_mm = 40
+    sig_h_mm = 12
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     
     print(f"[PDF] Adding signature, firma={firma}")
@@ -966,35 +978,35 @@ def descargar_pdf(id):
                 
                 if os.path.exists(firma_path) and os.path.getsize(firma_path) > 0:
                     pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-                    pdf.ln(2)
+                    pdf.ln(1)
                     os.remove(firma_path)
                     print("[PDF] Signature added successfully")
                 else:
                     print("[PDF] Temp file invalid or empty")
-                    pdf.ln(5)
+                    pdf.ln(3)
             except Exception as pdf_err:
                 print(f"[PDF] Error adding signature: {pdf_err}")
-                pdf.ln(5)
+                pdf.ln(3)
         else:
             processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
             firma_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
             if os.path.exists(firma_path):
                 pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
-                pdf.ln(2)
+                pdf.ln(1)
             else:
                 print(f"[PDF] Signature file not found: {firma_path}")
-                pdf.ln(5)
+                pdf.ln(3)
     else:
         print("[PDF] No firma to display")
-        pdf.ln(5)
+        pdf.ln(3)
 
     line_y = pdf.get_y()
-    line_w = 70
+    line_w = 60
     x_line = pdf.l_margin + (pdf.epw - line_w) / 2
     pdf.line(x_line, line_y, x_line + line_w, line_y)
-    pdf.ln(2)
+    pdf.ln(1)
     pdf.set_font('Arial', '', 10)
-    pdf.cell(0, 5, prestador_nombre or '', align='C', ln=True)
+    pdf.cell(0, 4, prestador_nombre or '', align='C', ln=True)
 
     output = io.BytesIO(pdf.output(dest='S'))
 
