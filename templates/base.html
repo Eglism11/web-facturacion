@@ -294,7 +294,7 @@
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+            <div id="flash-messages" class="fixed top-20 right-4 z-[9999] space-y-2 max-w-sm">
                 {% for category, message in messages %}
                     <div class="glass-card rounded-xl p-4 shadow-xl slide-down {% if category == 'success' %}border-l-4 border-primary-500{% else %}border-l-4 border-red-500{% endif %}">
                         <div class="flex items-start space-x-3">
@@ -310,6 +310,7 @@
                     </div>
                 {% endfor %}
             </div>
+            <script>setTimeout(function(){ var el=document.getElementById('flash-messages'); if(el) el.style.transition='opacity 0.5s'; setTimeout(function(){ if(el) el.remove(); },500); },3000);</script>
         {% endif %}
     {% endwith %}
 
