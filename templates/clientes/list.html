@@ -24,14 +24,14 @@
         </div>
     </div>
 
-    <div class="glass-card rounded-xl p-4 slide-up" style="animation-delay: 0.1s;">
+    <div class="glass-card rounded-xl p-4 slide-up max-w-7xl mx-auto" style="animation-delay: 0.1s;">
         <form method="GET" action="{{ url_for('listar_clientes') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1 relative">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i class="fas fa-search text-slate-400"></i>
                 </div>
                 <input type="text" name="q" value="{{ search }}" 
-                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 text-slate-900 placeholder-slate-400"
+                       class="input-field w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                        placeholder="Buscar por nombre o email...">
             </div>
             <div class="flex items-center gap-3">
