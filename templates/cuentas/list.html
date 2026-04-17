@@ -39,9 +39,30 @@
         </a>
     </div>
 
-    <div class="glass-card rounded-2xl overflow-hidden slide-up" style="animation-delay: 0.2s;">
+    <div class="glass-card rounded-xl overflow-hidden slide-up" style="animation-delay: 0.2s;">
         {% if cuentas.items %}
-            <div class="overflow-x-auto">
+            <div class="block md:hidden divide-y divide-slate-100">
+                {% for cuenta in cuentas.items %}
+                    <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="block bg-white p-3.5 hover:bg-slate-50 transition-all cursor-pointer">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-sm font-semibold text-slate-900">{{ cuenta.numero_factura }}</span>
+                            {% if cuenta.estado == 'pagado' %}
+                                <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Pagado</span>
+                            {% else %}
+                                <span class="badge px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">Pendiente</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-2">
+                            <p class="text-sm text-slate-500">{{ cuenta.cliente.nombre }}</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400">{{ cuenta.fecha_documento.strftime('%d %b %Y') }}</span>
+                            <span class="text-base font-bold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+            <div class="hidden md:block overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
@@ -88,9 +109,9 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-3 py-3 text-right">
-                                    <span class="text-sm font-semibold text-slate-900 break-all">{{ cuenta.monto|format_cop_co }}</span>
+                                    <span class="text-sm font-semibold text-slate-900 whitespace-nowrap">{{ cuenta.monto|format_cop_co }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-3 py-3 text-right">
                                     <div class="flex items-center justify-end space-x-2">
                                         <a href="{{ url_for('ver_cuenta', id=cuenta.id) }}" class="p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors" title="Ver">
                                             <i class="fas fa-eye"></i>
