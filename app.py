@@ -550,17 +550,17 @@ def eliminar_firma_usuario():
 @login_required
 def index():
     """Dashboard with summary statistics"""
-    total_clientes = Cliente.query.count()
-    total_cuentas = Cuenta.query.count()
+    total_clientes = Cliente.query.filter_by(usuario_id=current_user.id).count()
+    total_cuentas = Cuenta.query.filter_by(usuario_id=current_user.id).count()
 
     # Calculate totals
-    cuentas = Cuenta.query.all()
+    cuentas = Cuenta.query.filter_by(usuario_id=current_user.id).all()
     total_facturado = sum(c.monto for c in cuentas)
     total_pendiente = sum(c.monto for c in cuentas if c.estado == 'pendiente')
     total_pagado = sum(c.monto for c in cuentas if c.estado == 'pagado')
 
     # Recent accounts
-    cuentas_recientes = Cuenta.query.order_by(Cuenta.created_at.desc()).limit(5).all()
+    cuentas_recientes = Cuenta.query.filter_by(usuario_id=current_user.id).order_by(Cuenta.created_at.desc()).limit(5).all()
 
     return render_template('index.html',
                          total_clientes=total_clientes,
@@ -578,7 +578,7 @@ def listar_clientes():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('q', '')
 
-    query = Cliente.query
+    query = Cliente.query.filter_by(usuario_id=current_user.id)
     if search:
         query = query.filter(Cliente.nombre.contains(search) | Cliente.email.contains(search))
 
@@ -594,6 +594,7 @@ def crear_cliente():
     """Create new client"""
     if request.method == 'POST':
         cliente = Cliente(
+            usuario_id=current_user.id,
             nombre=request.form['nombre'],
             email=request.form.get('email', ''),
             telefono=request.form.get('telefono', ''),
@@ -610,15 +611,15 @@ def crear_cliente():
 @login_required
 def ver_cliente(id):
     """View client details"""
-    cliente = Cliente.query.get_or_404(id)
-    cuentas = Cuenta.query.filter_by(cliente_id=id).order_by(Cuenta.created_at.desc()).all()
+    cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+    cuentas = Cuenta.query.filter_by(cliente_id=id, usuario_id=current_user.id).order_by(Cuenta.created_at.desc()).all()
     return render_template('clientes/detail.html', cliente=cliente, cuentas=cuentas)
 
 @app.route('/clientes/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_cliente(id):
     """Edit client"""
-    cliente = Cliente.query.get_or_404(id)
+    cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
 
     if request.method == 'POST':
         cliente.nombre = request.form['nombre']
@@ -635,7 +636,7 @@ def editar_cliente(id):
 @login_required
 def eliminar_cliente(id):
     """Delete client"""
-    cliente = Cliente.query.get_or_404(id)
+    cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     db.session.delete(cliente)
     db.session.commit()
     flash('Cliente eliminado', 'success')
@@ -649,7 +650,7 @@ def listar_cuentas():
     page = request.args.get('page', 1, type=int)
     estado = request.args.get('estado', '')
 
-    query = Cuenta.query.join(Cliente)
+    query = Cuenta.query.filter_by(usuario_id=current_user.id).join(Cliente)
     if estado:
         query = query.filter(Cuenta.estado == estado)
 
@@ -666,7 +667,7 @@ def crear_cuenta():
     try:
         print(f"[CREAR_CUENTA] Starting, user_id={current_user.id}")
         
-        clientes = Cliente.query.order_by(Cliente.nombre).all()
+        clientes = Cliente.query.filter_by(usuario_id=current_user.id).order_by(Cliente.nombre).all()
         print(f"[CREAR_CUENTA] Clientes count: {len(clientes)}")
         
         firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
@@ -729,11 +730,13 @@ def crear_cuenta():
 
             year = fecha_documento.year
             count = Cuenta.query.filter(
-                db.extract('year', Cuenta.fecha_documento) == year
+                db.extract('year', Cuenta.fecha_documento) == year,
+                Cuenta.usuario_id == current_user.id
             ).count() + 1
             numero_factura = f"FAC-{year}-{count:04d}"
 
             cuenta = Cuenta(
+                usuario_id=current_user.id,
                 cliente_id=cliente_id,
                 concepto=concepto,
                 monto=monto,
@@ -760,14 +763,14 @@ def crear_cuenta():
 @login_required
 def ver_cuenta(id):
     """View account details"""
-    cuenta = Cuenta.query.get_or_404(id)
+    cuenta = Cuenta.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     return render_template('cuentas/detail.html', cuenta=cuenta)
 
 @app.route('/cuentas/<int:id>/pagar', methods=['POST'])
 @login_required
 def marcar_pagada(id):
     """Mark account as paid"""
-    cuenta = Cuenta.query.get_or_404(id)
+    cuenta = Cuenta.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     cuenta.estado = 'pagado'
     db.session.commit()
     flash('Cuenta marcada como pagada', 'success')
@@ -777,7 +780,7 @@ def marcar_pagada(id):
 @login_required
 def eliminar_cuenta(id):
     """Delete account"""
-    cuenta = Cuenta.query.get_or_404(id)
+    cuenta = Cuenta.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     db.session.delete(cuenta)
     db.session.commit()
     flash('Cuenta eliminada', 'success')
@@ -819,15 +822,15 @@ def gestionar_firmas():
         flash('Firma guardada correctamente.', 'success')
         return redirect(url_for('gestionar_firmas'))
 
-    firmas = Firma.query.order_by(Firma.created_at.desc()).all()
+    firmas = Firma.query.filter(Firma.nombre.like(f"usuario_{current_user.id}%")).order_by(Firma.created_at.desc()).all()
     return render_template('firmas/list.html', firmas=firmas)
 
 
 @app.route('/firmas/<int:id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_firma(id):
-    firma = Firma.query.get_or_404(id)
-    in_use = Cuenta.query.filter_by(firma_id=id).first()
+    firma = Firma.query.filter(Firma.nombre.like(f"usuario_{current_user.id}%")).first_or_404()
+    in_use = Cuenta.query.filter_by(firma_id=id, usuario_id=current_user.id).first()
     if in_use:
         flash('No se puede eliminar la firma porque ya esta asociada a una cuenta.', 'error')
         return redirect(url_for('gestionar_firmas'))
@@ -848,7 +851,7 @@ def descargar_pdf(id):
     print(f"[PDF] Generating PDF for account {id}")
     from fpdf import FPDF
 
-    cuenta = Cuenta.query.get_or_404(id)
+    cuenta = Cuenta.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     cliente = cuenta.cliente
     firma = cuenta.firma
     

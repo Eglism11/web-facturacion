@@ -40,6 +40,7 @@ class Cliente(db.Model):
     __tablename__ = 'clientes'
 
     id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     nombre = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255))
     telefono = db.Column(db.String(50))
@@ -56,6 +57,7 @@ class Cliente(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'usuario_id': self.usuario_id,
             'nombre': self.nombre,
             'email': self.email,
             'telefono': self.telefono,
@@ -69,6 +71,7 @@ class Cuenta(db.Model):
     __tablename__ = 'cuentas'
 
     id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     concepto = db.Column(db.Text, nullable=False)
     monto = db.Column(db.Numeric(15, 2), nullable=False)
@@ -86,6 +89,7 @@ class Cuenta(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'usuario_id': self.usuario_id,
             'cliente_id': self.cliente_id,
             'cliente_nombre': self.cliente.nombre if self.cliente else None,
             'concepto': self.concepto,
