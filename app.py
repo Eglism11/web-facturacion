@@ -57,21 +57,25 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(mes
 logger = logging.getLogger(__name__)
 
 supabase = None
-_sb_url = Config.SUPABASE_URL
-_sb_key = Config.SUPABASE_ANON_KEY
 
-logger.info(f"[SUPABASE] INIT - URL: '{_sb_url}', KEY exists: {bool(_sb_key)}, KEY prefix: '{_sb_key[:20]}...'")
-logger.info(f"[SUPABASE] ENV - SUPABASE_URL: {os.environ.get('SUPABASE_URL', 'NOT_SET')}")
-logger.info(f"[SUPABASE] ENV - SUPABASE_ANON_KEY: {os.environ.get('SUPABASE_ANON_KEY', 'NOT_SET')[:20]}...")
+_sb_url = os.environ.get('SUPABASE_URL', Config.SUPABASE_URL)
+_sb_key = os.environ.get('SUPABASE_ANON_KEY', Config.SUPABASE_ANON_KEY)
+
+if not _sb_key:
+    _sb_key = os.environ.get('SUPABASE_KEY', '')
+
+logger.info(f"[SUPABASE] INIT - URL present: {bool(_sb_url)}, KEY present: {bool(_sb_key)}")
+if _sb_key:
+    logger.info(f"[SUPABASE] KEY prefix: '{_sb_key[:25]}...'")
 
 if _sb_url and _sb_key:
     try:
         supabase = create_client(_sb_url, _sb_key)
-        logger.info(f"[SUPABASE] Client initialized OK, URL: {_sb_url}")
+        logger.info(f"[SUPABASE] Client OK, URL: {_sb_url}")
     except Exception as e:
-        logger.error(f"[SUPABASE] Client FAILED: {e}")
+        logger.error(f"[SUPABASE] FAIL: {e}")
 else:
-    logger.warning(f"[SUPABASE] Not initialized - URL: '{_sb_url}', KEY length: {len(_sb_key)}")
+    logger.warning(f"[SUPABASE] SKIP - URL: '{str(_sb_url)[:30]}', KEY: '{str(_sb_key)[:25]}...'")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
