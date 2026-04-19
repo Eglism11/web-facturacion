@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 supabase = None
 _sb_url = Config.SUPABASE_URL
-_sb_key = Config.SUPABASE_KEY
+_sb_key = Config.SUPABASE_ANON_KEY
 
 if _sb_url and _sb_key:
     try:

@@ -28,5 +28,5 @@ class Config:
     WTF_CSRF_TIME_LIMIT = 3600
 
     SUPABASE_URL = os.environ.get('SUPABASE_URL', '').rstrip('/')
-    SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
-    SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', '')
+    SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', os.environ.get('SUPABASE_KEY', ''))
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', os.environ.get('SUPABASE_SERVICE_KEY', ''))
