@@ -46,7 +46,7 @@ login_manager.session_protection = 'basic'
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return Usuario.query.get(int(user_id))
+        return Usuario.query.get(str(user_id))
     except:
         return None
 

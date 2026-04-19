@@ -10,7 +10,7 @@ db = SQLAlchemy()
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     nombre_completo = db.Column(db.String(255))
@@ -40,7 +40,7 @@ class Cliente(db.Model):
     __tablename__ = 'clientes'
 
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
     nombre = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255))
     telefono = db.Column(db.String(50))
@@ -71,7 +71,7 @@ class Cuenta(db.Model):
     __tablename__ = 'cuentas'
 
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     concepto = db.Column(db.Text, nullable=False)
     monto = db.Column(db.Numeric(15, 2), nullable=False)
@@ -107,7 +107,7 @@ class CuentaBancaria(db.Model):
     __tablename__ = 'cuentas_bancarias'
 
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
     nombre_banco = db.Column(db.String(100), nullable=False)
     tipo_cuenta = db.Column(db.String(20), nullable=False)  # Ahorros, Corriente
     numero_cuenta = db.Column(db.String(100), nullable=False)
