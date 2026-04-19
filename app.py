@@ -434,27 +434,25 @@ with app.app_context():
     ensure_schema_updates()
     os.makedirs(SIGNATURE_UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(SIGNATURE_PROCESSED_FOLDER, exist_ok=True)
-    
-    # Create admin user if not exists
-    admin_username = Config.ADMIN_USER
+
+    # Create admin user if not exists (using email format)
+    admin_email = Config.ADMIN_USER
     admin_password = Config.ADMIN_PASSWORD
-    admin = Usuario.query.filter_by(username=admin_username).first()
+    admin = Usuario.query.filter_by(email=admin_email).first()
     if not admin:
-        admin = Usuario(username=admin_username)
+        admin = Usuario(email=admin_email, nombre_completo='Admin')
         admin.set_password(admin_password)
-        admin.nombre_completo = admin_username
         db.session.add(admin)
         db.session.commit()
-        print(f"Admin user created: {admin_username}")
+        logger.info(f"[STARTUP] Admin user created: {admin_email}")
     else:
-        # NEVER overwrite existing user data, just verify password works
-        print(f"Admin user already exists: {admin_username}, nombre: {admin.nombre_completo}")
+        logger.info(f"[STARTUP] Admin user already exists: {admin_email}")
 
 
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required
 def perfil():
-    logger.info(f"[PERFIL] Request method: {request.method}, user_id={current_user.id}, username={current_user.username}")
+    logger.info(f"[PERFIL] Request method: {request.method}, user_id={current_user.id}, email={current_user.email}")
     logger.info(f"[PERFIL] Current nombre_completo BEFORE: '{current_user.nombre_completo}'")
     logger.info(f"[PERFIL] Current cedula BEFORE: '{current_user.cedula}'")
     try:
