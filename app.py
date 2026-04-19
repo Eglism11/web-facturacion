@@ -60,9 +60,11 @@ supabase = None
 if Config.SUPABASE_URL and Config.SUPABASE_KEY:
     try:
         supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
-        logger.info("[SUPABASE] Client initialized")
+        logger.info(f"[SUPABASE] Client initialized, URL: {Config.SUPABASE_URL}")
     except Exception as e:
-        logger.error(f"[SUPABASE] Error initializing: {e}")
+        logger.error(f"[SUPABASE] Error initializing: {e}, URL: {Config.SUPABASE_URL}, KEY: {Config.SUPABASE_KEY[:10]}..." if Config.SUPABASE_KEY else "No KEY")
+else:
+    logger.warning(f"[SUPABASE] Not configured - URL empty: {not Config.SUPABASE_URL}, KEY empty: {not Config.SUPABASE_KEY}")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
