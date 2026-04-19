@@ -230,6 +230,33 @@ def logout():
     flash('Sesión cerrada', 'info')
     return redirect(url_for('login'))
 
+@app.route('/recuperar-password', methods=['GET', 'POST'])
+@limiter.limit("3 per hour")
+def recuperar_password():
+    """Recuperar contraseña"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+
+        if not email:
+            flash('El email es requerido', 'error')
+            return redirect(url_for('recuperar_password'))
+
+        if supabase:
+            try:
+                supabase.auth.reset_password_for_email(email)
+                flash('Revisa tu email para restablecer la contraseña', 'success')
+                return redirect(url_for('login'))
+            except Exception as e:
+                logger.error(f"[RECUPERAR] Error: {e}")
+                flash('Error al enviar el email. Intenta de nuevo.', 'error')
+        else:
+            flash('Sistema de recuperación no disponible', 'error')
+
+    return render_template('recuperar-password.html')
+
 SIGNATURE_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas')
 SIGNATURE_PROCESSED_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'firmas_procesadas')
 ALLOWED_SIGNATURE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
