@@ -57,14 +57,17 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(mes
 logger = logging.getLogger(__name__)
 
 supabase = None
-if Config.SUPABASE_URL and Config.SUPABASE_KEY:
+_sb_url = Config.SUPABASE_URL
+_sb_key = Config.SUPABASE_KEY
+
+if _sb_url and _sb_key:
     try:
-        supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
-        logger.info(f"[SUPABASE] Client initialized, URL: {Config.SUPABASE_URL}")
+        supabase = create_client(_sb_url, _sb_key)
+        logger.info(f"[SUPABASE] Client initialized, URL: {_sb_url}")
     except Exception as e:
-        logger.error(f"[SUPABASE] Error initializing: {e}, URL: {Config.SUPABASE_URL}, KEY: {Config.SUPABASE_KEY[:10]}..." if Config.SUPABASE_KEY else "No KEY")
+        logger.error(f"[SUPABASE] Error initializing: {e}, URL: {_sb_url}, KEY prefix: {_sb_key[:10]}...")
 else:
-    logger.warning(f"[SUPABASE] Not configured - URL empty: {not Config.SUPABASE_URL}, KEY empty: {not Config.SUPABASE_KEY}")
+    logger.warning(f"[SUPABASE] Not configured - URL empty: {not _sb_url}, KEY empty: {not _sb_key}")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -246,6 +249,8 @@ def recuperar_password():
             flash('El email es requerido', 'error')
             return redirect(url_for('recuperar_password'))
 
+        logger.info(f"[RECUPERAR] Intentando para {email}, supabase: {supabase is not None}")
+
         if supabase:
             try:
                 supabase.auth.reset_password_for_email(email)
@@ -253,9 +258,10 @@ def recuperar_password():
                 return redirect(url_for('login'))
             except Exception as e:
                 logger.error(f"[RECUPERAR] Error: {e}")
-                flash('Error al enviar el email. Intenta de nuevo.', 'error')
+                flash('Error al enviar el email. Verifica el email e intenta de nuevo.', 'error')
         else:
-            flash('Sistema de recuperación no disponible', 'error')
+            logger.warning("[RECUPERAR] Supabase no configurado")
+            flash('Sistema de recuperación no disponible. Contacta al administrador.', 'error')
 
     return render_template('recuperar-password.html')
 
