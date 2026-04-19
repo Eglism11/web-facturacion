@@ -11,9 +11,9 @@ class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
 
     id = db.Column(db.String(36), primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
     nombre_completo = db.Column(db.String(255))
+    password_hash = db.Column(db.String(256))
     cedula = db.Column(db.String(50))
     banco = db.Column(db.String(100))
     numero_cuenta = db.Column(db.String(100))
@@ -25,6 +25,8 @@ class Usuario(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
+        if not self.password_hash:
+            return False
         if check_password_hash(self.password_hash, password):
             return True
         legacy_hash = hashlib.sha256(password.encode()).hexdigest()
@@ -34,7 +36,7 @@ class Usuario(UserMixin, db.Model):
         return False
 
     def __repr__(self):
-        return f'<Usuario {self.username}>'
+        return f'<Usuario {self.email}>'
 
 class Cliente(db.Model):
     __tablename__ = 'clientes'
@@ -122,6 +124,7 @@ class Firma(db.Model):
     __tablename__ = 'firmas'
 
     id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
     nombre = db.Column(db.String(120), nullable=False)
     archivo = db.Column(db.Text, nullable=False)  # Base64 string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

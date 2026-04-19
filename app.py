@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from config import Config
 from models import db, Cliente, Cuenta, Firma, Usuario, CuentaBancaria
+from supabase import create_client, Client
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy import inspect, text
@@ -11,6 +15,7 @@ import os
 import uuid
 import base64
 from PIL import Image, ImageOps
+import logging
 
 print("[STARTUP] Loading app.py...")
 print("[STARTUP] Flask app created")
@@ -22,19 +27,42 @@ app.config.from_object(Config)
 def handle_500_error(e):
     import traceback
     error_msg = traceback.format_exc()
-    print(f"[ERROR 500] {error_msg}")
+    logger.error(f"[ERROR 500] {error_msg}")
     return f"Error interno del servidor: {str(e)}<br><pre>{error_msg}</pre>", 500
 
 @app.errorhandler(Exception)
 def handle_exception(e):
     import traceback
     error_msg = traceback.format_exc()
-    print(f"[UNHANDLED EXCEPTION] {error_msg}")
+    logger.error(f"[UNHANDLED EXCEPTION] {error_msg}")
     return f"Error: {str(e)}<br><pre>{error_msg}</pre>", 500
 
 print("[STARTUP] Config loaded, initializing DB...")
 
 db.init_app(app)
+csrf = CSRFProtect(app)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+@app.context_processor
+def inject_csrf_token():
+    from flask_wtf.csrf import generate_csrf_token
+    return dict(csrf_token=lambda: generate_csrf_token())
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+supabase = None
+if Config.SUPABASE_URL and Config.SUPABASE_KEY:
+    try:
+        supabase = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+        logger.info("[SUPABASE] Client initialized")
+    except Exception as e:
+        logger.error(f"[SUPABASE] Error initializing: {e}")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -46,34 +74,158 @@ login_manager.session_protection = 'basic'
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return Usuario.query.get(str(user_id))
+        if not user_id:
+            return None
+        user = Usuario.query.get(str(user_id))
+        if user and session.get('user_id') == user.id:
+            return user
+        return None
     except:
         return None
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    
+
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
-        
-        user = Usuario.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            login_user(user)
-            flash('Bienvenido', 'success')
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('index'))
-        
-        flash('Usuario o contraseña incorrectos', 'error')
-    
+
+        if not email or not password:
+            flash('Email y contraseña son requeridos', 'error')
+            return redirect(url_for('login'))
+
+        if supabase:
+            try:
+                resp = supabase.auth.sign_in_with_password({
+                    "email": email,
+                    "password": password
+                })
+                if resp.user:
+                    user = Usuario.query.filter_by(id=resp.user.id).first()
+                    if not user:
+                        user = Usuario(
+                            id=resp.user.id,
+                            email=resp.user.email,
+                            nombre_completo=resp.user.user_metadata.get('nombre_completo', '')
+                        )
+                        db.session.add(user)
+                        db.session.commit()
+                    session['supabase_token'] = resp.session.access_token
+                    session['user_id'] = resp.user.id
+                    session['email'] = resp.user.email
+                    login_user(user)
+                    flash('Bienvenido', 'success')
+                    next_page = request.args.get('next')
+                    return redirect(next_page or url_for('index'))
+            except Exception as e:
+                logger.error(f"[LOGIN] Error: {e}")
+                flash('Email o contraseña incorrectos', 'error')
+        else:
+            user = Usuario.query.filter_by(email=email).first()
+            if user and user.check_password(password):
+                session['user_id'] = user.id
+                session['email'] = user.email
+                login_user(user)
+                flash('Bienvenido', 'success')
+                return redirect(url_for('index'))
+            flash('Email o contraseña incorrectos', 'error')
+
     return render_template('login.html')
+
+@app.route('/registro', methods=['GET', 'POST'])
+@limiter.limit("3 per hour")
+def registro():
+    """Registro de nuevos usuarios"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
+        nombre_completo = request.form.get('nombre_completo', '').strip()
+
+        if not email or not password or not nombre_completo:
+            flash('Todos los campos son requeridos', 'error')
+            return redirect(url_for('registro'))
+
+        if len(password) < 6:
+            flash('La contraseña debe tener al menos 6 caracteres', 'error')
+            return redirect(url_for('registro'))
+
+        if password != password_confirm:
+            flash('Las contraseñas no coinciden', 'error')
+            return redirect(url_for('registro'))
+
+        if supabase:
+            try:
+                resp = supabase.auth.sign_up({
+                    "email": email,
+                    "password": password,
+                    "options": {
+                        "data": {
+                            "nombre_completo": nombre_completo
+                        }
+                    }
+                })
+                if resp.user:
+                    user = Usuario.query.filter_by(id=resp.user.id).first()
+                    if not user:
+                        user = Usuario(
+                            id=resp.user.id,
+                            email=resp.user.email,
+                            nombre_completo=nombre_completo
+                        )
+                        db.session.add(user)
+                        db.session.commit()
+                    session['user_id'] = resp.user.id
+                    session['email'] = resp.user.email
+                    login_user(user)
+                    flash('Cuenta creada exitosamente', 'success')
+                    return redirect(url_for('index'))
+                elif resp.confirmation_sent:
+                    flash('Revisa tu email para confirmar la cuenta', 'success')
+                    return redirect(url_for('login'))
+            except Exception as e:
+                logger.error(f"[REGISTRO] Error: {e}")
+                if 'User already registered' in str(e):
+                    flash('Este email ya está registrado', 'error')
+                else:
+                    flash('Error al crear la cuenta. Intenta de nuevo.', 'error')
+                return redirect(url_for('registro'))
+        else:
+            if Usuario.query.filter_by(email=email).first():
+                flash('El email ya está registrado', 'error')
+                return redirect(url_for('registro'))
+
+            nuevo_usuario = Usuario(
+                id=str(uuid.uuid4()),
+                email=email,
+                nombre_completo=nombre_completo
+            )
+            nuevo_usuario.set_password(password)
+            db.session.add(nuevo_usuario)
+            db.session.commit()
+            session['user_id'] = nuevo_usuario.id
+            session['email'] = nuevo_usuario.email
+            login_user(nuevo_usuario)
+            flash('Cuenta creada exitosamente', 'success')
+            return redirect(url_for('index'))
+
+    return render_template('registro.html')
 
 @app.route('/logout')
 @login_required
 def logout():
+    if supabase and session.get('supabase_token'):
+        try:
+            supabase.auth.sign_out(session.get('supabase_token'))
+        except Exception as e:
+            logger.error(f"[LOGOUT] Error: {e}")
+    session.clear()
     logout_user()
     flash('Sesión cerrada', 'info')
     return redirect(url_for('login'))
@@ -111,7 +263,7 @@ def process_signature_remove_background(input_path, output_path):
         img.save(output_path, 'PNG')
         return True
     except Exception as e:
-        print(f"Error procesando firma: {e}")
+        logger.error(f"[FIRMA] Error procesando firma: {e}")
         return False
 
 
@@ -222,6 +374,7 @@ def ensure_schema_updates():
             statements.append("""
                 CREATE TABLE firmas (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    usuario_id VARCHAR(36) NOT NULL,
                     nombre VARCHAR(120) NOT NULL,
                     archivo TEXT NOT NULL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -231,11 +384,13 @@ def ensure_schema_updates():
             statements.append("""
                 CREATE TABLE firmas (
                     id SERIAL PRIMARY KEY,
+                    usuario_id VARCHAR(36) NOT NULL REFERENCES usuarios(id),
                     nombre VARCHAR(120) NOT NULL,
                     archivo TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+        statements.append("CREATE INDEX idx_firmas_usuario_id ON firmas(usuario_id)")
     else:
         firma_columns = {col['name'] for col in inspector.get_columns('firmas')}
         # Skip ALTER for SQLite
@@ -262,16 +417,16 @@ def ensure_schema_updates():
         # Skip SQLite ALTER COLUMN migration
 
     if statements:
-        print(f"[SCHEMA] Running {len(statements)} migrations...")
+        logger.info(f"[SCHEMA] Running {len(statements)} migrations...")
         for stmt in statements:
-            print(f"[SCHEMA] Execute: {stmt[:80]}...")
+            logger.info(f"[SCHEMA] Execute: {stmt[:80]}...")
         with db.engine.begin() as connection:
             for stmt in statements:
                 try:
                     connection.execute(text(stmt))
-                    print(f"[SCHEMA] Success: {stmt[:50]}...")
+                    logger.info(f"[SCHEMA] Success: {stmt[:50]}...")
                 except Exception as e:
-                    print(f"[SCHEMA] Skip/Error: {e}")
+                    logger.info(f"[SCHEMA] Skip: {type(e).__name__}")
 
     # Create tables on startup (for development)
 with app.app_context():
@@ -299,24 +454,24 @@ with app.app_context():
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required
 def perfil():
-    print(f"[PERFIL] Request method: {request.method}, user_id={current_user.id}, username={current_user.username}")
-    print(f"[PERFIL] Current nombre_completo BEFORE: '{current_user.nombre_completo}'")
-    print(f"[PERFIL] Current cedula BEFORE: '{current_user.cedula}'")
+    logger.info(f"[PERFIL] Request method: {request.method}, user_id={current_user.id}, username={current_user.username}")
+    logger.info(f"[PERFIL] Current nombre_completo BEFORE: '{current_user.nombre_completo}'")
+    logger.info(f"[PERFIL] Current cedula BEFORE: '{current_user.cedula}'")
     try:
         if request.method == 'POST':
             nombre = request.form.get('nombre_completo', '').strip()
             cedula = request.form.get('cedula', '').strip()
-            print(f"[PERFIL] Form received: nombre='{nombre}', cedula='{cedula}'")
+            logger.info(f"[PERFIL] Form received: nombre='{nombre}', cedula='{cedula}'")
             
             current_user.nombre_completo = nombre
             current_user.cedula = cedula
             
             db.session.commit()
-            print(f"[PERFIL] Committed, nombre_completo NOW: '{current_user.nombre_completo}'")
+            logger.info(f"[PERFIL] Committed, nombre_completo NOW: '{current_user.nombre_completo}'")
             
             # Refresh to verify
             db.session.refresh(current_user)
-            print(f"[PERFIL] After refresh: nombre_completo='{current_user.nombre_completo}', cedula='{current_user.cedula}'")
+            logger.info(f"[PERFIL] After refresh: nombre_completo='{current_user.nombre_completo}', cedula='{current_user.cedula}'")
             
             flash('Perfil actualizado correctamente', 'success')
             return redirect(url_for('perfil'))
@@ -324,16 +479,16 @@ def perfil():
         cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).all()
         
         firma_actual = None
-        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        firma = Firma.query.filter_by(usuario_id=current_user.id).first()
         if firma:
             firma_actual = firma.archivo
-            print(f"[PERFIL] Firma found: {firma.id}, length={len(firma.archivo)}")
+            logger.info(f"[PERFIL] Firma found: {firma.id}, length={len(firma.archivo)}")
         
-        print(f"[PERFIL] Rendering template with usuario.nombre_completo='{current_user.nombre_completo}'")
+        logger.info(f"[PERFIL] Rendering template with usuario.nombre_completo='{current_user.nombre_completo}'")
         return render_template('perfil.html', usuario=current_user, cuentas_bancarias=cuentas_bancarias, firma_actual=firma_actual)
     except Exception as e:
         import traceback
-        print(f"[PERFIL] Error: {traceback.format_exc()}")
+        logger.info(f"[PERFIL] Error: {traceback.format_exc()}")
         db.session.rollback()
         return f"Error al cargar perfil: {str(e)}<br><pre>{traceback.format_exc()}</pre>", 500
 
@@ -411,8 +566,8 @@ def guardar_firma_base64():
     try:
         img_data = base64.b64decode(b64data)
     except Exception as e:
-        print(f"[FIRMA] Error decoding base64: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 400
+        logger.error(f"[FIRMA] Error decodificando base64: {e}")
+        return jsonify({'success': False, 'error': 'Imagen de firma inválida'}), 400
     
     from PIL import Image
     
@@ -438,20 +593,20 @@ def guardar_firma_base64():
     base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
     
     try:
-        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        firma = Firma.query.filter_by(usuario_id=current_user.id).first()
         if not firma:
-            firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
+            firma = Firma(usuario_id=current_user.id, nombre=f"firma_{current_user.id}", archivo=base64_result)
             db.session.add(firma)
         else:
             firma.archivo = base64_result
         db.session.commit()
         
-        print(f"[FIRMA] Guardada: usuario={current_user.id}, firma_id={firma.id}, length={len(base64_result)}, prefix={base64_result[:30]}...")
+        logger.info(f"[FIRMA] Guardada: usuario={current_user.id}, firma_id={firma.id}, length={len(base64_result)}, prefix={base64_result[:30]}...")
         return jsonify({'success': True, 'message': 'Firma guardada correctamente', 'base64': base64_result})
     except Exception as e:
         db.session.rollback()
-        print(f"[FIRMA] Error guardando: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"[FIRMA] Error guardando firma: {e}")
+        return jsonify({'success': False, 'error': 'Error al guardar la firma'}), 500
 
 
 @app.route('/perfil/firma/upload', methods=['POST'])
@@ -474,7 +629,7 @@ def subir_firma_procesada():
     
     try:
         img = Image.open(file)
-        print(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
+        logger.info(f"[FIRMA_UPLOAD] Original: {img.mode}, size: {img.size}")
         
         # Convert to RGBA
         if img.mode != 'RGBA':
@@ -513,38 +668,38 @@ def subir_firma_procesada():
         
         base64_result = f"data:image/png;base64,{base64.b64encode(output.getvalue()).decode('utf-8')}"
         
-        print(f"[FIRMA_UPLOAD] Black on transparent: {len(base64_result)} chars")
+        logger.info(f"[FIRMA_UPLOAD] Black on transparent: {len(base64_result)} chars")
         
-        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        firma = Firma.query.filter_by(usuario_id=current_user.id).first()
         if not firma:
-            firma = Firma(nombre=f"usuario_{current_user.id}", archivo=base64_result)
+            firma = Firma(usuario_id=current_user.id, nombre=f"firma_{current_user.id}", archivo=base64_result)
             db.session.add(firma)
         else:
             firma.archivo = base64_result
         db.session.commit()
         
-        print(f"[FIRMA_UPLOAD] OK, firma_id={firma.id}")
+        logger.info(f"[FIRMA_UPLOAD] OK, firma_id={firma.id}")
         return jsonify({'success': True, 'message': 'Firma guardada', 'base64': base64_result})
     except Exception as e:
-        import traceback
-        print(f"[FIRMA_UPLOAD] Error: {traceback.format_exc()}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"[FIRMA_UPLOAD] Error procesando firma: {e}")
+        return jsonify({'success': False, 'error': 'Error al procesar la imagen'}), 500
 
 
 @app.route('/perfil/firma/eliminar', methods=['POST'])
 @login_required
 def eliminar_firma_usuario():
     try:
-        firma = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        firma = Firma.query.filter_by(usuario_id=current_user.id).first()
         if firma:
             db.session.delete(firma)
             db.session.commit()
-            print(f"[FIRMA] Eliminada para usuario {current_user.id}")
+            logger.info(f"[FIRMA] Eliminada para usuario {current_user.id}")
             return jsonify({'success': True, 'message': 'Firma eliminada'})
         return jsonify({'success': False, 'error': 'No hay firma para eliminar'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"[FIRMA] Error eliminando firma: {e}")
+        return jsonify({'success': False, 'error': 'Error al eliminar la firma'}), 500
 
 @app.route('/')
 @login_required
@@ -593,12 +748,17 @@ def listar_clientes():
 def crear_cliente():
     """Create new client"""
     if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        if not nombre:
+            flash('El nombre del cliente es requerido', 'error')
+            return redirect(url_for('crear_cliente'))
+
         cliente = Cliente(
             usuario_id=current_user.id,
-            nombre=request.form['nombre'],
-            email=request.form.get('email', ''),
-            telefono=request.form.get('telefono', ''),
-            identificacion=request.form.get('identificacion', '')
+            nombre=nombre,
+            email=request.form.get('email', '').strip(),
+            telefono=request.form.get('telefono', '').strip(),
+            identificacion=request.form.get('identificacion', '').strip()
         )
         db.session.add(cliente)
         db.session.commit()
@@ -622,10 +782,14 @@ def editar_cliente(id):
     cliente = Cliente.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
 
     if request.method == 'POST':
-        cliente.nombre = request.form['nombre']
-        cliente.email = request.form.get('email', '')
-        cliente.telefono = request.form.get('telefono', '')
-        cliente.identificacion = request.form.get('identificacion', '')
+        nombre = request.form.get('nombre', '').strip()
+        if not nombre:
+            flash('El nombre del cliente es requerido', 'error')
+            return redirect(url_for('editar_cliente', id=id))
+        cliente.nombre = nombre
+        cliente.email = request.form.get('email', '').strip()
+        cliente.telefono = request.form.get('telefono', '').strip()
+        cliente.identificacion = request.form.get('identificacion', '').strip()
         db.session.commit()
         flash('Cliente actualizado', 'success')
         return redirect(url_for('ver_cliente', id=id))
@@ -665,16 +829,16 @@ def listar_cuentas():
 def crear_cuenta():
     """Create new account"""
     try:
-        print(f"[CREAR_CUENTA] Starting, user_id={current_user.id}")
+        logger.info(f"[CREAR_CUENTA] Starting, user_id={current_user.id}")
         
         clientes = Cliente.query.filter_by(usuario_id=current_user.id).order_by(Cliente.nombre).all()
-        print(f"[CREAR_CUENTA] Clientes count: {len(clientes)}")
+        logger.info(f"[CREAR_CUENTA] Clientes count: {len(clientes)}")
         
-        firmas = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").all()
-        print(f"[CREAR_CUENTA] Firmas count: {len(firmas)}")
+        firmas = Firma.query.filter_by(usuario_id=current_user.id).all()
+        logger.info(f"[CREAR_CUENTA] Firmas count: {len(firmas)}")
         
         cuentas_bancarias = CuentaBancaria.query.filter_by(usuario_id=current_user.id).order_by(CuentaBancaria.es_principal.desc()).all()
-        print(f"[CREAR_CUENTA] Cuentas bancarias count: {len(cuentas_bancarias)}")
+        logger.info(f"[CREAR_CUENTA] Cuentas bancarias count: {len(cuentas_bancarias)}")
         
         cuenta_principal = next((c for c in cuentas_bancarias if c.es_principal), cuentas_bancarias[0] if cuentas_bancarias else None)
         
@@ -702,7 +866,7 @@ def crear_cuenta():
             
             firma_id = request.form.get('firma_id') or None
             if not firma_id:
-                firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+                firma_usuario = Firma.query.filter_by(usuario_id=current_user.id).first()
                 if firma_usuario:
                     firma_id = firma_usuario.id
             
@@ -754,8 +918,8 @@ def crear_cuenta():
 
         return render_template('cuentas/create.html', clientes=clientes, firmas=firmas, today=date.today().isoformat(), perfil=perfil, cuentas_bancarias=cuentas_bancarias)
     except Exception as e:
-        print(f"[CREAR_CUENTA] Error: {e}")
-        flash(f'Error: {str(e)}', 'error')
+        logger.error(f"[CREAR_CUENTA] Error creando cuenta: {e}")
+        flash('Error al crear la cuenta. Verifica los datos e intenta de nuevo.', 'error')
         return redirect(url_for('index'))
 
 
@@ -816,20 +980,31 @@ def gestionar_firmas():
         processed_path = os.path.join(SIGNATURE_PROCESSED_FOLDER, processed_filename)
         process_signature_remove_background(save_path, processed_path)
 
-        firma = Firma(nombre=nombre, archivo=filename)
+        try:
+            with open(processed_path, 'rb') as f:
+                img_data = base64.b64encode(f.read()).decode('utf-8')
+            base64_result = f"data:image/png;base64,{img_data}"
+        except Exception as e:
+            logger.error(f"[FIRMA] Error convirtiendo imagen a base64: {e}")
+            flash('Error al procesar la imagen', 'error')
+            return redirect(url_for('gestionar_firmas'))
+
+        firma = Firma(usuario_id=current_user.id, nombre=nombre, archivo=base64_result)
         db.session.add(firma)
         db.session.commit()
+        os.remove(save_path)
+        os.remove(processed_path)
         flash('Firma guardada correctamente.', 'success')
         return redirect(url_for('gestionar_firmas'))
 
-    firmas = Firma.query.filter(Firma.nombre.like(f"usuario_{current_user.id}%")).order_by(Firma.created_at.desc()).all()
+    firmas = Firma.query.filter_by(usuario_id=current_user.id).order_by(Firma.created_at.desc()).all()
     return render_template('firmas/list.html', firmas=firmas)
 
 
 @app.route('/firmas/<int:id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_firma(id):
-    firma = Firma.query.filter(Firma.nombre.like(f"usuario_{current_user.id}%")).first_or_404()
+    firma = Firma.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
     in_use = Cuenta.query.filter_by(firma_id=id, usuario_id=current_user.id).first()
     if in_use:
         flash('No se puede eliminar la firma porque ya esta asociada a una cuenta.', 'error')
@@ -848,7 +1023,7 @@ def eliminar_firma(id):
 @login_required
 def descargar_pdf(id):
     """Generate and download equivalent invoice PDF"""
-    print(f"[PDF] Generating PDF for account {id}")
+    logger.info(f"[PDF] Generating PDF for account {id}")
     from fpdf import FPDF
 
     cuenta = Cuenta.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
@@ -856,23 +1031,23 @@ def descargar_pdf(id):
     firma = cuenta.firma
     
     # Debug: Show firma details
-    print(f"[PDF] Cuenta: {cuenta.numero_factura}, cliente: {cliente.nombre}")
-    print(f"[PDF] Cuenta.firma_id: {cuenta.firma_id}")
-    print(f"[PDF] Firma from cuenta.firma: {firma}")
+    logger.info(f"[PDF] Cuenta: {cuenta.numero_factura}, cliente: {cliente.nombre}")
+    logger.info(f"[PDF] Cuenta.firma_id: {cuenta.firma_id}")
+    logger.info(f"[PDF] Firma from cuenta.firma: {firma}")
     
     # If no firma on account, try to get user's default firma
     if not firma:
-        firma_usuario = Firma.query.filter_by(nombre=f"usuario_{current_user.id}").first()
+        firma_usuario = Firma.query.filter_by(usuario_id=current_user.id).first()
         if firma_usuario:
             firma = firma_usuario
-            print(f"[PDF] Using user's default firma: id={firma.id}")
+            logger.info(f"[PDF] Using user's default firma: id={firma.id}")
         else:
-            print(f"[PDF] No firma found for account or user")
+            logger.info(f"[PDF] No firma found for account or user")
     
     if firma:
-        print(f"[PDF] Firma found: id={firma.id}, archivo type={type(firma.archivo)}, starts_with='{firma.archivo[:30] if firma.archivo else 'empty'}'")
+        logger.info(f"[PDF] Firma found: id={firma.id}, archivo type={type(firma.archivo)}, starts_with='{firma.archivo[:30] if firma.archivo else 'empty'}'")
     else:
-        print(f"[PDF] No firma to display")
+        logger.info(f"[PDF] No firma to display")
 
     pdf = FPDF()
     pdf.add_page()
@@ -958,7 +1133,7 @@ def descargar_pdf(id):
     sig_h_mm = 12
     x_img = pdf.l_margin + (pdf.epw - sig_w_mm) / 2
     
-    print(f"[PDF] Adding signature, firma={firma}")
+    logger.info(f"[PDF] Adding signature, firma={firma}")
     
     if firma and firma.archivo:
         if firma.archivo.startswith('data:'):
@@ -971,7 +1146,7 @@ def descargar_pdf(id):
                     tmp.write(img_data)
                     firma_path = tmp.name
                 
-                print(f"[PDF] Signature temp file: {firma_path}, size: {os.path.getsize(firma_path)}")
+                logger.info(f"[PDF] Signature temp file: {firma_path}, size: {os.path.getsize(firma_path)}")
                 
                 if os.path.exists(firma_path) and os.path.getsize(firma_path) > 0:
                     pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
@@ -982,7 +1157,7 @@ def descargar_pdf(id):
                     print("[PDF] Temp file invalid or empty")
                     pdf.ln(3)
             except Exception as pdf_err:
-                print(f"[PDF] Error adding signature: {pdf_err}")
+                logger.info(f"[PDF] Error adding signature: {pdf_err}")
                 pdf.ln(3)
         else:
             processed_filename = os.path.splitext(firma.archivo)[0] + '.png'
@@ -991,7 +1166,7 @@ def descargar_pdf(id):
                 pdf.image(firma_path, x=x_img, w=sig_w_mm, h=sig_h_mm)
                 pdf.ln(1)
             else:
-                print(f"[PDF] Signature file not found: {firma_path}")
+                logger.info(f"[PDF] Signature file not found: {firma_path}")
                 pdf.ln(3)
     else:
         print("[PDF] No firma to display")
