@@ -440,7 +440,7 @@ with app.app_context():
     admin_password = Config.ADMIN_PASSWORD
     admin = Usuario.query.filter_by(email=admin_email).first()
     if not admin:
-        admin = Usuario(email=admin_email, nombre_completo='Admin')
+        admin = Usuario(id=str(uuid.uuid4()), email=admin_email, nombre_completo='Admin')
         admin.set_password(admin_password)
         db.session.add(admin)
         db.session.commit()
