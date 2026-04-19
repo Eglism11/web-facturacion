@@ -259,18 +259,19 @@ def recuperar_password():
             flash('El email es requerido', 'error')
             return redirect(url_for('recuperar_password'))
 
-        logger.info(f"[RECUPERAR] Intentando para {email}, supabase: {supabase is not None}")
+        logger.info(f"[RECUPERAR] Intentando para {email}, supabase: {supabase is not None}, type: {type(supabase)}")
 
         if supabase:
             try:
-                supabase.auth.reset_password_for_email(email)
+                result = supabase.auth.reset_password_for_email(email)
+                logger.info(f"[RECUPERAR] OK: {result}")
                 flash('Revisa tu email para restablecer la contraseña', 'success')
                 return redirect(url_for('login'))
             except Exception as e:
                 logger.error(f"[RECUPERAR] Error: {e}")
                 flash('Error al enviar el email. Verifica el email e intenta de nuevo.', 'error')
         else:
-            logger.warning("[RECUPERAR] Supabase no configurado")
+            logger.warning("[RECUPERAR] Supabase es None")
             flash('Sistema de recuperación no disponible. Contacta al administrador.', 'error')
 
     return render_template('recuperar-password.html')
