@@ -57,10 +57,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(mes
 logger = logging.getLogger(__name__)
 
 supabase = None
-_sb_url = Config.SUPABASE_URL or os.environ.get('SUPABASE_URL', '')
-_sb_key = Config.SUPABASE_ANON_KEY or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('SUPABASE_KEY') or ''
+_sb_url = Config.SUPABASE_URL
+_sb_key = Config.SUPABASE_ANON_KEY
 
-logger.info(f"[SUPABASE] INIT - URL: '{_sb_url}', KEY exists: {bool(_sb_key)}, KEY prefix: '{_sb_key[:15]}...' " if _sb_key else f"[SUPABASE] INIT - URL: '{_sb_url}', KEY: (empty)")
+logger.info(f"[SUPABASE] INIT - URL: '{_sb_url}', KEY exists: {bool(_sb_key)}, KEY prefix: '{_sb_key[:20]}...'")
+logger.info(f"[SUPABASE] ENV - SUPABASE_URL: {os.environ.get('SUPABASE_URL', 'NOT_SET')}")
+logger.info(f"[SUPABASE] ENV - SUPABASE_ANON_KEY: {os.environ.get('SUPABASE_ANON_KEY', 'NOT_SET')[:20]}...")
 
 if _sb_url and _sb_key:
     try:
