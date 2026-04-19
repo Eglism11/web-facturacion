@@ -50,8 +50,8 @@ limiter = Limiter(
 
 @app.context_processor
 def inject_csrf_token():
-    from flask_wtf.csrf import generate_csrf_token
-    return dict(csrf_token=lambda: generate_csrf_token())
+    from flask_wtf.csrf import generate_csrf
+    return dict(csrf_token=lambda: generate_csrf())
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
