@@ -70,10 +70,12 @@ if _sb_key:
 
 if _sb_url and _sb_key:
     try:
+        from supabase import create_client
         supabase = create_client(_sb_url, _sb_key)
         logger.info(f"[SUPABASE] Client OK, URL: {_sb_url}")
     except Exception as e:
         logger.error(f"[SUPABASE] FAIL: {e}")
+        supabase = None
 else:
     logger.warning(f"[SUPABASE] SKIP - URL: '{str(_sb_url)[:30]}', KEY: '{str(_sb_key)[:25]}...'")
 
