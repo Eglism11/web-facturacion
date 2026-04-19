@@ -3,6 +3,7 @@ from datetime import datetime, date
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
+import uuid
 
 db = SQLAlchemy()
 
@@ -10,7 +11,7 @@ db = SQLAlchemy()
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
 
-    id = db.Column(db.String(36), primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(255), unique=True, nullable=False)
     nombre_completo = db.Column(db.String(255))
     password_hash = db.Column(db.String(256))
